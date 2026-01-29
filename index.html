@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Editor PDF – PC y Móvil</title>
+
+<style>
+body{
+  font-family:Arial;
+  background:#f4f6f8;
+  margin:0;
+  padding:10px
+}
+h1{
+  text-align:center;
+  font-size:18px;
+  margin:10px 0
+}
+.panel{
+  background:#fff;
+  border-radius:10px;
+  padding:10px;
+  max-width:100%;
+  margin:auto
+}
+.toolbar{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-bottom:8px;
+  align-items:center
+}
+button{
+  padding:10px 14px;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+  font-weight:bold;
+  font-size:14px
+}
+.primary{background:#0b6b3a;color:#fff}
+.secondary{background:#2b3a55;color:#fff}
+.ghost{background:#fff;border:1px solid #ccc}
+.viewer{
+  border:1px solid #ccc;
+  border-radius:10px;
+  padding:6px;
+  overflow:auto;
+  text-align:center
+}
+.stage{
+  position:relative;
+  display:inline-block
+}
+canvas{
+  display:block;
+  max-width:100%;
+  touch-action:none
+}
+#drawCanvas{
+  position:absolute;
+  top:0;
+  left:0
+}
+.info{
+  font-size:13px;
+  color:#555
+}
+
+/* MOBILE */
+@media(max-width:768px){
+  h1{font-size:15px}
+  .toolbar button{
+    flex:1;
+    padding:12px 6px;
+    font-size:13px
+  }
+  .info{
+    width:100%;
+    text-align:center
+  }
+}
+</style>
+</head>
+
+<body>
+
+<h1>Editor PDF (PC & Móvil)</h1>
+
+<div class="panel">
+
+<div class="toolbar">
+  <button class="secondary" id="btnLoad">Cargar PDF</button>
+  <button class="ghost active">Texto</button>
+
+  <button class="ghost" id="prevPage">◀</button>
+  <span class="info" id="pageInfo">Página -</span>
+  <button class="ghost" id="nextPage">▶</button>
+
+  <button class="primary" id="btnSave" disabled>Guardar</button>
+</div>
+
+<div class="viewer">
+  <div class="stage">
+    <canvas id="pdfCanvas"></canvas>
+    <canvas id="drawCanvas"></canvas>
+  </div>
+</div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js"></script>
+<script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+ "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
+
+const pdfCanvas = document.getElementById("pdfCanvas");
+const drawCanvas = document.getElementById("drawCanvas");
+const pdfCtx = pdfCanvas.getContext("2d");
+const ctx = drawCanvas.getContext("2d");
+
+let pdfBytes, pdfDoc, pageCount = 0, currentPage = 1;
+let texts = [];
+let selectedText = null;
+let dragging = false;
+let offsetX = 0, offsetY = 0;
+
+function getScale(){
+  return window.innerWidth < 768 ? 1 : 1.4;
+}
+
+function redraw(){
+  ctx.clearRect(0,0,drawCanvas.width,drawCanvas.height);
+  texts.filter(t=>t.page===currentPage).forEach(t=>{
+    ctx.font = `${t.size}px Arial`;
+    ctx.fillStyle = "black";
+    ctx.fillText(t.text, t.x, t.y);
+
+    if(t===selectedText){
+      const w = ctx.measureText(t.text).width;
+      ctx.strokeStyle = "blue";
+      ctx.strokeRect(t.x-4, t.y-t.size-4, w+8, t.size+8);
+    }
+  });
+}
+
+function getPos(e){
+  const r = drawCanvas.getBoundingClientRect();
+  const touch = e.touches ? e.touches[0] : e;
+  return {x:touch.clientX-r.left, y:touch.clientY-r.top};
+}
+
+function findText(x,y){
+  const pad = 12;
+  return texts.find(t=>{
+    if(t.page!==currentPage) return false;
+    ctx.font = `${t.size}px Arial`;
+    const w = ctx.measureText(t.text).width;
+    return x>=t.x-pad && x<=t.x+w+pad && y>=t.y-t.size-pad && y<=t.y+pad;
+  });
+}
+
+drawCanvas.addEventListener("mousedown", start);
+drawCanvas.addEventListener("touchstart", start);
+
+function start(e){
+  e.preventDefault();
+  const {x,y} = getPos(e);
+  selectedText = findText(x,y);
+
+  if(selectedText){
+    dragging = true;
+    offsetX = x - selectedText.x;
+    offsetY = y - selectedText.y;
+  }else{
+    const txt = prompt("Texto:");
+    if(txt){
+      texts.push({text:txt,x,y,size:14,page:currentPage});
+    }
+  }
+  redraw();
+}
+
+window.addEventListener("mousemove", move);
+window.addEventListener("touchmove", move);
+
+function move(e){
+  if(!dragging || !selectedText) return;
+  const {x,y} = getPos(e);
+  selectedText.x = x - offsetX;
+  selectedText.y = y - offsetY;
+  redraw();
+}
+
+window.addEventListener("mouseup", end);
+window.addEventListener("touchend", end);
+
+function end(){
+  dragging = false;
+}
+
+drawCanvas.addEventListener("dblclick", ()=>{
+  if(!selectedText) return;
+  const t = prompt("Editar texto:", selectedText.text);
+  if(t!==null){
+    selectedText.text = t;
+    redraw();
+  }
+});
+
+window.addEventListener("keydown", e=>{
+  if(e.key==="Delete" && selectedText){
+    texts = texts.filter(t=>t!==selectedText);
+    selectedText = null;
+    redraw();
+  }
+});
+
+async function renderPage(n){
+  currentPage = n;
+  const page = await pdfDoc.getPage(n);
+  const vp = page.getViewport({scale:getScale()});
+  pdfCanvas.width = drawCanvas.width = vp.width;
+  pdfCanvas.height = drawCanvas.height = vp.height;
+  await page.render({canvasContext:pdfCtx,viewport:vp}).promise;
+  redraw();
+  pageInfo.innerText = `Página ${n} / ${pageCount}`;
+}
+
+btnLoad.onclick = async ()=>{
+  const r = await fetch("plantilla.pdf");
+  pdfBytes = await r.arrayBuffer();
+  pdfDoc = await pdfjsLib.getDocument({data:pdfBytes}).promise;
+  pageCount = pdfDoc.numPages;
+  renderPage(1);
+  btnSave.disabled = false;
+};
+
+prevPage.onclick = ()=> currentPage>1 && renderPage(currentPage-1);
+nextPage.onclick = ()=> currentPage<pageCount && renderPage(currentPage+1);
+
+btnSave.onclick = async ()=>{
+  const {PDFDocument} = PDFLib;
+  const out = await PDFDocument.load(pdfBytes);
+  const pages = out.getPages();
+
+  texts.forEach(t=>{
+    pages[t.page-1].drawText(t.text,{
+      x:t.x,
+      y:pages[t.page-1].getHeight()-t.y,
+      size:t.size
+    });
+  });
+
+  const bytes = await out.save();
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([bytes],{type:"application/pdf"}));
+  a.download = "PDF_EDITADO.pdf";
+  a.click();
+};
+</script>
+
+</body>
+</html>
