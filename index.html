@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Editor PDF – PC y Móvil</title>
+<title>Editor PDF – PC y Móvil (Estable)</title>
 
 <style>
 body{
@@ -68,7 +68,6 @@ canvas{
   color:#555
 }
 
-/* MOBILE */
 @media(max-width:768px){
   h1{font-size:15px}
   .toolbar button{
@@ -92,13 +91,13 @@ canvas{
 
 <div class="toolbar">
   <button class="secondary" id="btnLoad">Cargar PDF</button>
-  <button class="ghost active">Texto</button>
+  <button class="ghost">Texto</button>
 
   <button class="ghost" id="prevPage">◀</button>
   <span class="info" id="pageInfo">Página -</span>
   <button class="ghost" id="nextPage">▶</button>
 
-  <button class="primary" id="btnSave" disabled>Guardar</button>
+  <button class="primary" id="btnSave" disabled>Guardar PDF</button>
 </div>
 
 <div class="viewer">
@@ -125,9 +124,9 @@ const ctx = drawCanvas.getContext("2d");
 
 let pdfBytes, pdfDoc, pageCount = 0, currentPage = 1;
 let texts = [];
-let selectedText = null;
+let selected = null;
 let dragging = false;
-let offsetX = 0, offsetY = 0;
+let dx = 0, dy = 0;
 
 function getScale(){
   return window.innerWidth < 768 ? 1 : 1.4;
@@ -135,87 +134,97 @@ function getScale(){
 
 function redraw(){
   ctx.clearRect(0,0,drawCanvas.width,drawCanvas.height);
+
   texts.filter(t=>t.page===currentPage).forEach(t=>{
+    const x = t.xPct * drawCanvas.width;
+    const y = t.yPct * drawCanvas.height;
+
     ctx.font = `${t.size}px Arial`;
     ctx.fillStyle = "black";
-    ctx.fillText(t.text, t.x, t.y);
+    ctx.fillText(t.text, x, y);
 
-    if(t===selectedText){
+    if(t===selected){
       const w = ctx.measureText(t.text).width;
       ctx.strokeStyle = "blue";
-      ctx.strokeRect(t.x-4, t.y-t.size-4, w+8, t.size+8);
+      ctx.strokeRect(x-4, y-t.size-4, w+8, t.size+8);
     }
   });
 }
 
-function getPos(e){
+function pos(e){
   const r = drawCanvas.getBoundingClientRect();
-  const touch = e.touches ? e.touches[0] : e;
-  return {x:touch.clientX-r.left, y:touch.clientY-r.top};
+  const p = e.touches ? e.touches[0] : e;
+  return {x:p.clientX-r.left,y:p.clientY-r.top};
 }
 
-function findText(x,y){
+function hit(x,y){
   const pad = 12;
   return texts.find(t=>{
     if(t.page!==currentPage) return false;
     ctx.font = `${t.size}px Arial`;
+    const tx = t.xPct * drawCanvas.width;
+    const ty = t.yPct * drawCanvas.height;
     const w = ctx.measureText(t.text).width;
-    return x>=t.x-pad && x<=t.x+w+pad && y>=t.y-t.size-pad && y<=t.y+pad;
+    return x>=tx-pad && x<=tx+w+pad && y>=ty-t.size-pad && y<=ty+pad;
   });
 }
 
-drawCanvas.addEventListener("mousedown", start);
-drawCanvas.addEventListener("touchstart", start);
-
 function start(e){
   e.preventDefault();
-  const {x,y} = getPos(e);
-  selectedText = findText(x,y);
+  const {x,y} = pos(e);
+  selected = hit(x,y);
 
-  if(selectedText){
+  if(selected){
     dragging = true;
-    offsetX = x - selectedText.x;
-    offsetY = y - selectedText.y;
+    dx = x - (selected.xPct * drawCanvas.width);
+    dy = y - (selected.yPct * drawCanvas.height);
   }else{
-    const txt = prompt("Texto:");
-    if(txt){
-      texts.push({text:txt,x,y,size:14,page:currentPage});
+    const t = prompt("Texto:");
+    if(t){
+      texts.push({
+        text:t,
+        xPct:x/drawCanvas.width,
+        yPct:y/drawCanvas.height,
+        size:14,
+        page:currentPage
+      });
     }
   }
   redraw();
 }
 
-window.addEventListener("mousemove", move);
-window.addEventListener("touchmove", move);
-
 function move(e){
-  if(!dragging || !selectedText) return;
-  const {x,y} = getPos(e);
-  selectedText.x = x - offsetX;
-  selectedText.y = y - offsetY;
+  if(!dragging || !selected) return;
+  const {x,y} = pos(e);
+  selected.xPct = (x-dx)/drawCanvas.width;
+  selected.yPct = (y-dy)/drawCanvas.height;
   redraw();
 }
-
-window.addEventListener("mouseup", end);
-window.addEventListener("touchend", end);
 
 function end(){
   dragging = false;
 }
 
-drawCanvas.addEventListener("dblclick", ()=>{
-  if(!selectedText) return;
-  const t = prompt("Editar texto:", selectedText.text);
+drawCanvas.addEventListener("mousedown",start);
+drawCanvas.addEventListener("touchstart",start);
+window.addEventListener("mousemove",move);
+window.addEventListener("touchmove",move);
+window.addEventListener("mouseup",end);
+window.addEventListener("touchend",end);
+
+drawCanvas.addEventListener("dblclick",()=>{
+  if(!selected) return;
+  const t = prompt("Editar texto:",selected.text);
   if(t!==null){
-    selectedText.text = t;
+    selected.text = t;
     redraw();
   }
 });
 
-window.addEventListener("keydown", e=>{
-  if(e.key==="Delete" && selectedText){
-    texts = texts.filter(t=>t!==selectedText);
-    selectedText = null;
+window.addEventListener("keydown",e=>{
+  if(e.key==="Delete" && selected){
+    texts = texts.filter(t=>t!==selected);
+    selected = null;
     redraw();
   }
 });
@@ -240,8 +249,8 @@ btnLoad.onclick = async ()=>{
   btnSave.disabled = false;
 };
 
-prevPage.onclick = ()=> currentPage>1 && renderPage(currentPage-1);
-nextPage.onclick = ()=> currentPage<pageCount && renderPage(currentPage+1);
+prevPage.onclick = ()=>currentPage>1 && renderPage(currentPage-1);
+nextPage.onclick = ()=>currentPage<pageCount && renderPage(currentPage+1);
 
 btnSave.onclick = async ()=>{
   const {PDFDocument} = PDFLib;
@@ -249,10 +258,11 @@ btnSave.onclick = async ()=>{
   const pages = out.getPages();
 
   texts.forEach(t=>{
-    pages[t.page-1].drawText(t.text,{
-      x:t.x,
-      y:pages[t.page-1].getHeight()-t.y,
-      size:t.size
+    const p = pages[t.page-1];
+    p.drawText(t.text,{
+      x: t.xPct * p.getWidth(),
+      y: p.getHeight() - (t.yPct * p.getHeight()),
+      size: t.size
     });
   });
 
@@ -266,3 +276,5 @@ btnSave.onclick = async ()=>{
 
 </body>
 </html>
+
+
