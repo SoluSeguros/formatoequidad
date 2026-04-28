@@ -47,6 +47,33 @@ body{
   font-size:12px;
 }
 
+.brand-wrap{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.brand-logo{
+  width:58px;
+  height:58px;
+  object-fit:contain;
+  background:#fff;
+  border-radius:14px;
+  padding:6px;
+  box-shadow:0 4px 12px rgba(0,0,0,.18);
+}
+
+.brand-text{
+  min-width:0;
+}
+
+.loading-logo{
+  width:78px;
+  height:auto;
+  margin:0 auto 12px;
+  display:block;
+}
+
 .main-wrap{
   padding:12px;
   padding-bottom:96px;
@@ -381,6 +408,12 @@ canvas{
   .app-header h1{
     font-size:15px;
   }
+
+  .brand-logo{
+    width:48px;
+    height:48px;
+    padding:5px;
+  }
 }
 </style>
 </head>
@@ -389,6 +422,7 @@ canvas{
 
 <div id="loading" class="loading-modal">
   <div class="loader-card">
+    <img class="loading-logo" src="https://soluasistencia.com/wp-content/uploads/2024/11/logo_solu.png" alt="Logo Soluasistencia">
     <div class="spinner"></div>
     <h5 class="fw-bold mb-1">Preparando formulario</h5>
     <p class="text-muted mb-0">Cargando la plantilla y dejando todo listo para diligenciar.</p>
@@ -396,8 +430,13 @@ canvas{
 </div>
 
 <header class="app-header">
-  <h1>Formulario móvil de siniestros</h1>
-  <small>Soluasistencia · Declaración de responsabilidad civil servicio público</small>
+  <div class="brand-wrap">
+    <img class="brand-logo" src="https://soluasistencia.com/wp-content/uploads/2024/11/logo_solu.png" alt="Logo Soluasistencia">
+    <div class="brand-text">
+      <h1>Formulario móvil de siniestros</h1>
+      <small>Soluasistencia · Declaración de responsabilidad civil servicio público</small>
+    </div>
+  </div>
 </header>
 
 <main class="main-wrap">
@@ -813,6 +852,7 @@ let pageCount = 0;
 let currentPage = 1;
 let currentStep = 0;
 let zoom = window.innerWidth < 900 ? 0.78 : 1.25;
+let renderRatio = getPreviewRenderRatio();
 let fields = {};
 let signatureHasData = false;
 let sigDrawing = false;
@@ -1103,15 +1143,37 @@ async function loadTemplate(){
   await renderCurrentPage();
 }
 
+function getPreviewRenderRatio(){
+  const dpr = window.devicePixelRatio || 1;
+  // En móviles la pantalla tiene muchos píxeles físicos. Renderizar el PDF
+  // a mayor resolución evita que el visor se vea borroso o pixelado.
+  if(window.innerWidth < 900) return Math.min(3, Math.max(2.5, dpr));
+  return Math.min(2.5, Math.max(1.5, dpr));
+}
+
 async function renderCurrentPage(){
   if(!pdfDoc) return;
   const page = await pdfDoc.getPage(currentPage);
-  const vp = page.getViewport({scale:zoom});
 
-  pdfCanvas.width = drawCanvas.width = vp.width;
-  pdfCanvas.height = drawCanvas.height = vp.height;
+  renderRatio = getPreviewRenderRatio();
 
-  await page.render({canvasContext:pdfCtx, viewport:vp}).promise;
+  const cssVp = page.getViewport({scale:zoom});
+  const renderVp = page.getViewport({scale:zoom * renderRatio});
+
+  pdfCanvas.width = renderVp.width;
+  pdfCanvas.height = renderVp.height;
+  drawCanvas.width = renderVp.width;
+  drawCanvas.height = renderVp.height;
+
+  pdfCanvas.style.width = `${cssVp.width}px`;
+  pdfCanvas.style.height = `${cssVp.height}px`;
+  drawCanvas.style.width = `${cssVp.width}px`;
+  drawCanvas.style.height = `${cssVp.height}px`;
+
+  pdfCtx.setTransform(1,0,0,1,0,0);
+  overlayCtx.setTransform(1,0,0,1,0,0);
+
+  await page.render({canvasContext:pdfCtx, viewport:renderVp}).promise;
   document.getElementById("pageInfo").textContent = `Página ${currentPage} / ${pageCount}`;
   drawOverlay();
 }
@@ -1136,7 +1198,9 @@ function getDrawableItems(){
 }
 
 function drawOverlay(){
+  overlayCtx.setTransform(1,0,0,1,0,0);
   overlayCtx.clearRect(0,0,drawCanvas.width,drawCanvas.height);
+  overlayCtx.setTransform(renderRatio,0,0,renderRatio,0,0);
   overlayCtx.fillStyle = "black";
   overlayCtx.strokeStyle = "#0d6efd";
   overlayCtx.lineWidth = 1;
