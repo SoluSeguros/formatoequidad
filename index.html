@@ -156,7 +156,23 @@ textarea.form-control{
 
 .viewer-card{
   margin-top:12px;
-  display:none;
+  display:block;
+}
+
+.viewer-title-mobile{
+  padding:10px 12px;
+  border-bottom:1px solid var(--borde);
+  background:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  font-size:13px;
+}
+
+.viewer-title-mobile span{
+  color:#6b7280;
+  font-size:12px;
 }
 
 .viewer-toolbar{
@@ -201,6 +217,37 @@ canvas{
 #drawCanvas{
   position:absolute;
   inset:0;
+}
+
+.pdf-placeholder{
+  width:min(100%, 420px);
+  min-height:260px;
+  background:#fff;
+  border:1px dashed #9ca3af;
+  border-radius:16px;
+  padding:22px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  color:#374151;
+  text-align:center;
+  margin:auto;
+}
+
+.pdf-placeholder span{
+  font-size:13px;
+  color:#6b7280;
+}
+
+.mini-spinner{
+  width:34px;
+  height:34px;
+  border:4px solid #d8eadf;
+  border-top-color:var(--verde);
+  border-radius:50%;
+  animation:spin .9s linear infinite;
 }
 
 .bottom-bar{
@@ -784,6 +831,10 @@ canvas{
   </section>
 
   <section class="card-mobile viewer-card" id="viewerCard">
+    <div class="viewer-title-mobile">
+      <strong>Vista previa del PDF</strong>
+      <span>Visible desde el paso 1</span>
+    </div>
     <div class="viewer-toolbar">
       <button class="btn btn-light border" id="prevPage" type="button">◀</button>
       <strong id="pageInfo">Página -</strong>
@@ -793,6 +844,11 @@ canvas{
     </div>
     <div class="viewer">
       <div class="stage" id="stage">
+        <div id="pdfPlaceholder" class="pdf-placeholder">
+          <div class="mini-spinner"></div>
+          <strong>Cargando vista del PDF...</strong>
+          <span>La aplicación ya se puede diligenciar mientras se prepara la plantilla.</span>
+        </div>
         <canvas id="pdfCanvas"></canvas>
         <canvas id="drawCanvas"></canvas>
       </div>
@@ -1002,10 +1058,14 @@ document.addEventListener("DOMContentLoaded", () => {
   // La plantilla se carga en segundo plano para evitar esperas largas en celular.
   document.getElementById("loading").style.display = "none";
   showStep(0);
+  renderCurrentPage();
 
   loadTemplate()
     .then(() => {
       showToast("Plantilla lista para vista previa y descarga.");
+      // Como el visor debe estar visible desde el paso 1,
+      // renderizamos la primera página apenas termine de cargar la plantilla.
+      setTimeout(renderCurrentPage, 80);
     })
     .catch(err => {
       console.error(err);
@@ -1171,7 +1231,9 @@ function getPreviewRenderRatio(cssVp){
 
 async function renderCurrentPage(){
   if(!pdfDoc){
-    showToast("La plantilla todavía está cargando. Intenta nuevamente en unos segundos.");
+    document.getElementById("pageInfo").textContent = "Cargando PDF...";
+    const placeholder = document.getElementById("pdfPlaceholder");
+    if(placeholder) placeholder.style.display = "flex";
     return;
   }
 
@@ -1197,6 +1259,9 @@ async function renderCurrentPage(){
   overlayCtx.setTransform(1,0,0,1,0,0);
   pdfCtx.clearRect(0,0,pdfCanvas.width,pdfCanvas.height);
   overlayCtx.clearRect(0,0,drawCanvas.width,drawCanvas.height);
+
+  const placeholder = document.getElementById("pdfPlaceholder");
+  if(placeholder) placeholder.style.display = "none";
 
   document.getElementById("pageInfo").textContent = `Cargando página ${currentPage}...`;
 
