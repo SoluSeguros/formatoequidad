@@ -1,83 +1,385 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Editor PDF – Soluasistencia</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Formulario Móvil de Siniestros – Soluasistencia</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
 <style>
-body{
-  font-family:Arial;
-  background:#f4f6f8;
-  margin:0;
-  padding:10px
-}
-h1{
-  text-align:center;
-  font-size:18px;
-  margin:10px 0
-}
-.panel{
-  background:#fff;
-  border-radius:10px;
-  padding:10px;
-  max-width:100%;
-  margin:auto
-}
-.toolbar{
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-  margin-bottom:8px;
-  align-items:center
-}
-button{
-  padding:10px 14px;
-  border:none;
-  border-radius:6px;
-  cursor:pointer;
-  font-weight:bold;
-  font-size:14px
-}
-.primary{background:#0b6b3a;color:#fff}
-.secondary{background:#2b3a55;color:#fff}
-.ghost{background:#fff;border:1px solid #ccc}
-.viewer{
-  border:1px solid #ccc;
-  border-radius:10px;
-  padding:6px;
-  overflow:auto;
-  text-align:center
-}
-.stage{
-  position:relative;
-  display:inline-block
-}
-canvas{
-  display:block;
-  max-width:100%;
-  touch-action:none
-}
-#drawCanvas{
-  position:absolute;
-  top:0;
-  left:0
-}
-.info{
-  font-size:13px;
-  color:#555
+:root{
+  --verde:#008f45;
+  --verde-oscuro:#006d36;
+  --azul:#17213b;
+  --gris:#f3f5f7;
+  --borde:#dbe1e8;
 }
 
-@media(max-width:768px){
-  h1{font-size:15px}
-  .toolbar button{
-    flex:1;
-    padding:12px 6px;
-    font-size:13px
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:Arial, Helvetica, sans-serif;
+  background:var(--gris);
+  color:#1f2937;
+  overflow-x:hidden;
+}
+
+.app-header{
+  position:sticky;
+  top:0;
+  z-index:50;
+  background:linear-gradient(135deg,var(--verde),var(--verde-oscuro));
+  color:white;
+  padding:12px 14px;
+  box-shadow:0 3px 14px rgba(0,0,0,.18);
+}
+
+.app-header h1{
+  font-size:17px;
+  margin:0;
+  font-weight:800;
+}
+
+.app-header small{
+  opacity:.9;
+  font-size:12px;
+}
+
+.main-wrap{
+  padding:12px;
+  padding-bottom:96px;
+}
+
+.card-mobile{
+  background:white;
+  border:1px solid var(--borde);
+  border-radius:18px;
+  box-shadow:0 8px 24px rgba(15,23,42,.07);
+  overflow:hidden;
+}
+
+.step-indicator{
+  display:flex;
+  gap:6px;
+  overflow-x:auto;
+  padding:10px 12px;
+  background:white;
+  border-bottom:1px solid var(--borde);
+}
+
+.step-dot{
+  min-width:max-content;
+  border:1px solid var(--borde);
+  background:#fff;
+  color:#526170;
+  border-radius:999px;
+  padding:7px 10px;
+  font-size:12px;
+  font-weight:700;
+  cursor:pointer;
+}
+
+.step-dot.active{
+  background:var(--verde);
+  color:#fff;
+  border-color:var(--verde);
+}
+
+.step-body{
+  padding:14px;
+}
+
+.step-title{
+  font-size:18px;
+  font-weight:800;
+  color:var(--azul);
+  margin-bottom:4px;
+}
+
+.step-help{
+  color:#6b7280;
+  font-size:13px;
+  margin-bottom:12px;
+}
+
+label{
+  font-size:13px;
+  color:#374151;
+  font-weight:700;
+  margin-bottom:4px;
+}
+
+.form-control,.form-select{
+  border-radius:12px;
+  min-height:44px;
+  font-size:15px;
+}
+
+textarea.form-control{
+  min-height:105px;
+}
+
+.quick-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:9px;
+}
+
+.viewer-card{
+  margin-top:12px;
+  display:none;
+}
+
+.viewer-toolbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  padding:10px;
+  border-bottom:1px solid var(--borde);
+  background:#fff;
+  position:sticky;
+  top:62px;
+  z-index:40;
+}
+
+.viewer-toolbar .btn{
+  border-radius:12px;
+  font-weight:800;
+}
+
+.viewer{
+  background:#cfd6df;
+  padding:10px;
+  overflow:auto;
+  max-height:72vh;
+  text-align:center;
+  -webkit-overflow-scrolling:touch;
+}
+
+.stage{
+  position:relative;
+  display:inline-block;
+  transform-origin:top center;
+}
+
+canvas{
+  display:block;
+  max-width:none;
+  touch-action:none;
+}
+
+#drawCanvas{
+  position:absolute;
+  inset:0;
+}
+
+.bottom-bar{
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:0;
+  z-index:60;
+  background:#fff;
+  border-top:1px solid var(--borde);
+  box-shadow:0 -6px 22px rgba(0,0,0,.12);
+  padding:10px;
+}
+
+.bottom-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  max-width:980px;
+  margin:0 auto;
+}
+
+.btn-main{
+  background:var(--verde);
+  color:white;
+  border:none;
+  border-radius:14px;
+  min-height:48px;
+  font-weight:900;
+}
+
+.btn-main:disabled{
+  background:#93c5aa;
+  color:#fff;
+}
+
+.btn-soft{
+  background:#eef2f7;
+  color:#1f2937;
+  border:none;
+  border-radius:14px;
+  min-height:48px;
+  font-weight:900;
+}
+
+.btn-danger-soft{
+  background:#fee2e2;
+  color:#991b1b;
+  border:none;
+  border-radius:14px;
+  min-height:48px;
+  font-weight:900;
+}
+
+.badge-ok{
+  background:#e7f7ee;
+  color:#08723a;
+  border:1px solid #bce9cf;
+  padding:6px 9px;
+  border-radius:999px;
+  font-weight:800;
+  font-size:12px;
+}
+
+.badge-warn{
+  background:#fff7ed;
+  color:#9a3412;
+  border:1px solid #fed7aa;
+  padding:6px 9px;
+  border-radius:999px;
+  font-weight:800;
+  font-size:12px;
+}
+
+.signature-box{
+  border:2px dashed #9ca3af;
+  border-radius:16px;
+  background:#fff;
+  overflow:hidden;
+}
+
+#signatureCanvas{
+  width:100%;
+  height:210px;
+  background:#fff;
+  touch-action:none;
+}
+
+.help-box{
+  background:#eefcf3;
+  border:1px solid #bce9cf;
+  border-radius:14px;
+  padding:10px;
+  color:#075f31;
+  font-size:13px;
+}
+
+.text-pill{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  border:1px solid var(--borde);
+  background:#fff;
+  border-radius:12px;
+  padding:8px 10px;
+  margin-bottom:8px;
+  font-size:13px;
+}
+
+.loading-modal{
+  position:fixed;
+  inset:0;
+  background:rgba(255,255,255,.94);
+  z-index:200;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+
+.loader-card{
+  width:min(420px,100%);
+  background:#fff;
+  border:1px solid var(--borde);
+  border-radius:22px;
+  box-shadow:0 15px 45px rgba(0,0,0,.13);
+  padding:22px;
+  text-align:center;
+}
+
+.spinner{
+  width:48px;
+  height:48px;
+  border:5px solid #d8eadf;
+  border-top-color:var(--verde);
+  border-radius:50%;
+  animation:spin .9s linear infinite;
+  margin:0 auto 12px;
+}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.toast-app{
+  position:fixed;
+  left:12px;
+  right:12px;
+  bottom:86px;
+  z-index:180;
+  display:none;
+}
+
+.toast-app .box{
+  background:#111827;
+  color:#fff;
+  border-radius:14px;
+  padding:12px 14px;
+  font-size:14px;
+  box-shadow:0 10px 30px rgba(0,0,0,.25);
+}
+
+@media(min-width:900px){
+  .main-wrap{
+    max-width:1180px;
+    margin:0 auto;
+    display:grid;
+    grid-template-columns:420px 1fr;
+    gap:14px;
+    padding-bottom:20px;
   }
-  .info{
-    width:100%;
-    text-align:center
+
+  .viewer-card{
+    display:block !important;
+    margin-top:0;
+  }
+
+  .bottom-bar{
+    position:sticky;
+    bottom:0;
+  }
+
+  .bottom-actions{
+    grid-template-columns:1fr 1fr 1fr;
+  }
+}
+
+@media(max-width:520px){
+  .main-wrap{
+    padding:8px;
+    padding-bottom:102px;
+  }
+
+  .step-body{
+    padding:12px;
+  }
+
+  .quick-grid{
+    grid-template-columns:1fr;
+  }
+
+  .viewer{
+    max-height:70vh;
+  }
+
+  .app-header h1{
+    font-size:15px;
   }
 }
 </style>
@@ -85,193 +387,1160 @@ canvas{
 
 <body>
 
-<h1>Editor PDF – Soluasistencia</h1>
-
-<div class="panel">
-
-<div class="toolbar">
-  <button class="secondary" id="btnLoad">Cargar PDF</button>
-  <button class="ghost">Texto</button>
-
-  <button class="ghost" id="prevPage">◀</button>
-  <span class="info" id="pageInfo">Página -</span>
-  <button class="ghost" id="nextPage">▶</button>
-
-  <button class="primary" id="btnSave" disabled>Guardar PDF</button>
-</div>
-
-<div class="viewer">
-  <div class="stage">
-    <canvas id="pdfCanvas"></canvas>
-    <canvas id="drawCanvas"></canvas>
+<div id="loading" class="loading-modal">
+  <div class="loader-card">
+    <div class="spinner"></div>
+    <h5 class="fw-bold mb-1">Preparando formulario</h5>
+    <p class="text-muted mb-0">Cargando la plantilla y dejando todo listo para diligenciar.</p>
   </div>
 </div>
 
+<header class="app-header">
+  <h1>Formulario móvil de siniestros</h1>
+  <small>Soluasistencia · Declaración de responsabilidad civil servicio público</small>
+</header>
+
+<main class="main-wrap">
+
+  <section class="card-mobile">
+    <div class="step-indicator" id="stepIndicator"></div>
+
+    <div class="step-body">
+
+      <!-- PASO 1 -->
+      <div class="step" data-step="0">
+        <div class="step-title">1. Datos del accidente</div>
+        <div class="step-help">Diligencia los datos principales. La app los ubicará automáticamente en el PDF.</div>
+
+        <div class="row g-2">
+          <div class="col-12">
+            <label>Lugar del accidente</label>
+            <input class="form-control pdf-field" data-key="lugarAccidente" placeholder="Ej: Av. Oriental con San Juan">
+          </div>
+          <div class="col-6">
+            <label>Ciudad</label>
+            <input class="form-control pdf-field" data-key="ciudad" placeholder="Medellín">
+          </div>
+          <div class="col-6">
+            <label>Municipio</label>
+            <input class="form-control pdf-field" data-key="municipio" placeholder="Medellín">
+          </div>
+          <div class="col-6">
+            <label>Fecha siniestro</label>
+            <input type="date" class="form-control pdf-field" data-key="fechaSiniestro">
+          </div>
+          <div class="col-6">
+            <label>Fecha reporte</label>
+            <input type="date" class="form-control pdf-field" data-key="fechaReporte">
+          </div>
+          <div class="col-12">
+            <label>N° póliza</label>
+            <input class="form-control pdf-field" data-key="poliza" placeholder="Número de póliza">
+          </div>
+        </div>
+      </div>
+
+      <!-- PASO 2 -->
+      <div class="step" data-step="1" style="display:none">
+        <div class="step-title">2. Asegurado y vehículo</div>
+        <div class="step-help">Información del tomador, asegurado y datos del vehículo.</div>
+
+        <div class="row g-2">
+          <div class="col-12">
+            <label>Nombre del tomador</label>
+            <input class="form-control pdf-field" data-key="tomador">
+          </div>
+          <div class="col-12">
+            <label>C.C. o NIT tomador</label>
+            <input class="form-control pdf-field" data-key="nitTomador">
+          </div>
+          <div class="col-12">
+            <label>Nombre del asegurado</label>
+            <input class="form-control pdf-field" data-key="asegurado">
+          </div>
+          <div class="col-12">
+            <label>C.C. o NIT asegurado</label>
+            <input class="form-control pdf-field" data-key="nitAsegurado">
+          </div>
+          <div class="col-12">
+            <label>Dirección del asegurado</label>
+            <input class="form-control pdf-field" data-key="direccionAsegurado">
+          </div>
+          <div class="col-6">
+            <label>Ciudad</label>
+            <input class="form-control pdf-field" data-key="ciudadAsegurado">
+          </div>
+          <div class="col-6">
+            <label>Teléfono 1</label>
+            <input class="form-control pdf-field" data-key="telefono1">
+          </div>
+          <div class="col-12">
+            <label>Correo electrónico</label>
+            <input type="email" class="form-control pdf-field" data-key="correo">
+          </div>
+          <div class="col-6">
+            <label>Teléfono 2</label>
+            <input class="form-control pdf-field" data-key="telefono2">
+          </div>
+          <div class="col-6">
+            <label>Celular</label>
+            <input class="form-control pdf-field" data-key="celular">
+          </div>
+          <div class="col-6">
+            <label>Marca</label>
+            <input class="form-control pdf-field" data-key="marca">
+          </div>
+          <div class="col-6">
+            <label>Tipo</label>
+            <input class="form-control pdf-field" data-key="tipo">
+          </div>
+          <div class="col-6">
+            <label>Placa</label>
+            <input class="form-control pdf-field text-uppercase" data-key="placa">
+          </div>
+          <div class="col-6">
+            <label>Modelo</label>
+            <input class="form-control pdf-field" data-key="modelo">
+          </div>
+          <div class="col-6">
+            <label>Capacidad</label>
+            <input class="form-control pdf-field" data-key="capacidad">
+          </div>
+          <div class="col-6">
+            <label>Color</label>
+            <input class="form-control pdf-field" data-key="color">
+          </div>
+        </div>
+      </div>
+
+      <!-- PASO 3 -->
+      <div class="step" data-step="2" style="display:none">
+        <div class="step-title">3. Conductor y relato</div>
+        <div class="step-help">El relato se parte automáticamente en varias líneas dentro del formulario.</div>
+
+        <div class="row g-2">
+          <div class="col-12">
+            <label>Nombre del conductor y teléfono</label>
+            <input class="form-control pdf-field" data-key="conductorTelefono">
+          </div>
+          <div class="col-12">
+            <label>Documento de identificación</label>
+            <input class="form-control pdf-field" data-key="documentoConductor">
+          </div>
+          <div class="col-6">
+            <label>Día del hecho</label>
+            <input class="form-control pdf-field" data-key="diaHecho" placeholder="Ej: 23">
+          </div>
+          <div class="col-6">
+            <label>Mes</label>
+            <input class="form-control pdf-field" data-key="mesHecho" placeholder="Ej: abril">
+          </div>
+          <div class="col-6">
+            <label>Año</label>
+            <input class="form-control pdf-field" data-key="anioHecho" placeholder="Ej: 2026">
+          </div>
+          <div class="col-6">
+            <label>Hora aproximada</label>
+            <input class="form-control pdf-field" data-key="horaHecho" placeholder="Ej: 08:30">
+          </div>
+          <div class="col-12">
+            <label>Dirección del hecho</label>
+            <input class="form-control pdf-field" data-key="direccionHecho">
+          </div>
+          <div class="col-12">
+            <label>Relato de los hechos</label>
+            <textarea class="form-control pdf-field" data-key="relato" placeholder="Describe de manera clara y detallada lo ocurrido..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- PASO 4 -->
+      <div class="step" data-step="3" style="display:none">
+        <div class="step-title">4. Responsabilidad y observaciones</div>
+        <div class="step-help">Selecciona las opciones principales. Las respuestas se marcarán en la plantilla.</div>
+
+        <div class="row g-2">
+          <div class="col-6">
+            <label>Personas lesionadas</label>
+            <select class="form-select pdf-field" data-key="lesionados">
+              <option value="">Seleccione</option>
+              <option>SI</option>
+              <option>NO</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label>¿Cuántas?</label>
+            <input class="form-control pdf-field" data-key="cuantosLesionados">
+          </div>
+          <div class="col-6">
+            <label>Personas fallecidas</label>
+            <select class="form-select pdf-field" data-key="fallecidos">
+              <option value="">Seleccione</option>
+              <option>SI</option>
+              <option>NO</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label>¿Cuántas?</label>
+            <input class="form-control pdf-field" data-key="cuantosFallecidos">
+          </div>
+          <div class="col-12">
+            <label>El accidente se presentó por</label>
+            <select class="form-select pdf-field" data-key="causa">
+              <option value="">Seleccione</option>
+              <option value="A">A. Imprudencia de un tercero</option>
+              <option value="B">B. Fallas mecánicas</option>
+              <option value="C">C. Mal estado de la vía</option>
+              <option value="D">D. Otra</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label>Grado responsabilidad 1 a 10</label>
+            <input type="number" min="1" max="10" class="form-control pdf-field" data-key="gradoResponsabilidad">
+          </div>
+          <div class="col-6">
+            <label>Responsabilidad compartida</label>
+            <select class="form-select pdf-field" data-key="responsabilidadCompartida">
+              <option value="">Seleccione</option>
+              <option>SI</option>
+              <option>NO</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label>¿Por qué?</label>
+            <input class="form-control pdf-field" data-key="porqueResponsabilidad">
+          </div>
+          <div class="col-6">
+            <label>Informe de autoridades</label>
+            <select class="form-select pdf-field" data-key="informeAutoridad">
+              <option value="">Seleccione</option>
+              <option>SI</option>
+              <option>NO</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label>Daños del vehículo</label>
+            <textarea class="form-control pdf-field" data-key="danosVehiculo"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- PASO 5 -->
+      <div class="step" data-step="4" style="display:none">
+        <div class="step-title">5. Terceros afectados</div>
+        <div class="step-help">Esta sección llena los dos bloques de vehículos terceros en la página 2.</div>
+
+        <div class="accordion" id="tercerosAccordion">
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#tercero1">
+                Vehículo tercero 1
+              </button>
+            </h2>
+            <div id="tercero1" class="accordion-collapse collapse show" data-bs-parent="#tercerosAccordion">
+              <div class="accordion-body">
+                <div class="row g-2">
+                  <div class="col-6"><label>Marca</label><input class="form-control pdf-field" data-key="t1Marca"></div>
+                  <div class="col-6"><label>Modelo</label><input class="form-control pdf-field" data-key="t1Modelo"></div>
+                  <div class="col-6"><label>Color</label><input class="form-control pdf-field" data-key="t1Color"></div>
+                  <div class="col-6"><label>Placas</label><input class="form-control pdf-field text-uppercase" data-key="t1Placas"></div>
+                  <div class="col-6"><label>Servicio</label><input class="form-control pdf-field" data-key="t1Servicio"></div>
+                  <div class="col-6"><label>Asegurado en</label><input class="form-control pdf-field" data-key="t1Asegurado"></div>
+                  <div class="col-12"><label>Conductor</label><input class="form-control pdf-field" data-key="t1Conductor"></div>
+                  <div class="col-6"><label>Licencia</label><input class="form-control pdf-field" data-key="t1Licencia"></div>
+                  <div class="col-6"><label>C.C.</label><input class="form-control pdf-field" data-key="t1Cedula"></div>
+                  <div class="col-12"><label>Propietario</label><input class="form-control pdf-field" data-key="t1Propietario"></div>
+                  <div class="col-12"><label>Dirección</label><input class="form-control pdf-field" data-key="t1Direccion"></div>
+                  <div class="col-6"><label>Ciudad</label><input class="form-control pdf-field" data-key="t1Ciudad"></div>
+                  <div class="col-6"><label>Teléfono</label><input class="form-control pdf-field" data-key="t1Telefono"></div>
+                  <div class="col-12"><label>Actualmente se encuentra en</label><input class="form-control pdf-field" data-key="t1Ubicacion"></div>
+                  <div class="col-12"><label>Daños</label><textarea class="form-control pdf-field" data-key="t1Danos"></textarea></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#tercero2">
+                Vehículo tercero 2
+              </button>
+            </h2>
+            <div id="tercero2" class="accordion-collapse collapse" data-bs-parent="#tercerosAccordion">
+              <div class="accordion-body">
+                <div class="row g-2">
+                  <div class="col-6"><label>Marca</label><input class="form-control pdf-field" data-key="t2Marca"></div>
+                  <div class="col-6"><label>Modelo</label><input class="form-control pdf-field" data-key="t2Modelo"></div>
+                  <div class="col-6"><label>Color</label><input class="form-control pdf-field" data-key="t2Color"></div>
+                  <div class="col-6"><label>Placas</label><input class="form-control pdf-field text-uppercase" data-key="t2Placas"></div>
+                  <div class="col-6"><label>Servicio</label><input class="form-control pdf-field" data-key="t2Servicio"></div>
+                  <div class="col-6"><label>Asegurado en</label><input class="form-control pdf-field" data-key="t2Asegurado"></div>
+                  <div class="col-12"><label>Conductor</label><input class="form-control pdf-field" data-key="t2Conductor"></div>
+                  <div class="col-6"><label>Licencia</label><input class="form-control pdf-field" data-key="t2Licencia"></div>
+                  <div class="col-6"><label>C.C.</label><input class="form-control pdf-field" data-key="t2Cedula"></div>
+                  <div class="col-12"><label>Propietario</label><input class="form-control pdf-field" data-key="t2Propietario"></div>
+                  <div class="col-12"><label>Dirección</label><input class="form-control pdf-field" data-key="t2Direccion"></div>
+                  <div class="col-6"><label>Ciudad</label><input class="form-control pdf-field" data-key="t2Ciudad"></div>
+                  <div class="col-6"><label>Teléfono</label><input class="form-control pdf-field" data-key="t2Telefono"></div>
+                  <div class="col-12"><label>Actualmente se encuentra en</label><input class="form-control pdf-field" data-key="t2Ubicacion"></div>
+                  <div class="col-12"><label>Daños</label><textarea class="form-control pdf-field" data-key="t2Danos"></textarea></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- PASO 6 -->
+      <div class="step" data-step="5" style="display:none">
+        <div class="step-title">6. Lesionados y fallecidos</div>
+        <div class="step-help">Campos principales para la página 2. Puedes dejar en blanco los que no apliquen.</div>
+
+        <div class="row g-2">
+          <div class="col-12"><h6 class="fw-bold mt-1">Lesionado 1</h6></div>
+          <div class="col-12"><label>Nombre</label><input class="form-control pdf-field" data-key="l1Nombre"></div>
+          <div class="col-6"><label>C.C.</label><input class="form-control pdf-field" data-key="l1Cedula"></div>
+          <div class="col-6"><label>Teléfono</label><input class="form-control pdf-field" data-key="l1Telefono"></div>
+          <div class="col-12"><label>Dirección</label><input class="form-control pdf-field" data-key="l1Direccion"></div>
+          <div class="col-12"><label>Clínica u hospital</label><input class="form-control pdf-field" data-key="l1Hospital"></div>
+
+          <div class="col-12"><h6 class="fw-bold mt-3">Fallecido 1</h6></div>
+          <div class="col-12"><label>Nombre</label><input class="form-control pdf-field" data-key="f1Nombre"></div>
+          <div class="col-6"><label>C.C.</label><input class="form-control pdf-field" data-key="f1Cedula"></div>
+          <div class="col-6"><label>Teléfono</label><input class="form-control pdf-field" data-key="f1Telefono"></div>
+          <div class="col-12"><label>Dirección</label><input class="form-control pdf-field" data-key="f1Direccion"></div>
+          <div class="col-6"><label>Género</label><input class="form-control pdf-field" data-key="f1Genero"></div>
+          <div class="col-6"><label>Edad</label><input class="form-control pdf-field" data-key="f1Edad"></div>
+          <div class="col-12"><label>Lugar donde se declara el fallecimiento</label><input class="form-control pdf-field" data-key="f1Lugar"></div>
+        </div>
+      </div>
+
+      <!-- PASO 7 -->
+      <div class="step" data-step="6" style="display:none">
+        <div class="step-title">7. Firma y guardar</div>
+        <div class="step-help">Firma con el dedo. Luego revisa la vista previa y descarga el PDF.</div>
+
+        <div class="help-box mb-3">
+          La firma se ubicará automáticamente en el campo superior izquierdo de la primera página.
+        </div>
+
+        <label>Firma del declarante</label>
+        <div class="signature-box mb-2">
+          <canvas id="signatureCanvas"></canvas>
+        </div>
+
+        <div class="quick-grid mb-3">
+          <button class="btn-danger-soft" id="btnClearSignature" type="button">Limpiar firma</button>
+          <button class="btn-soft" id="btnShowPreview" type="button">Ver vista previa</button>
+        </div>
+
+        <div class="d-flex gap-2 flex-wrap">
+          <span class="badge-ok" id="statusTemplate">Plantilla cargada</span>
+          <span class="badge-warn" id="statusFields">Campos: 0</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="card-mobile viewer-card" id="viewerCard">
+    <div class="viewer-toolbar">
+      <button class="btn btn-light border" id="prevPage" type="button">◀</button>
+      <strong id="pageInfo">Página -</strong>
+      <button class="btn btn-light border" id="nextPage" type="button">▶</button>
+      <button class="btn btn-light border" id="zoomOut" type="button">−</button>
+      <button class="btn btn-light border" id="zoomIn" type="button">+</button>
+    </div>
+    <div class="viewer">
+      <div class="stage" id="stage">
+        <canvas id="pdfCanvas"></canvas>
+        <canvas id="drawCanvas"></canvas>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div class="bottom-bar">
+  <div class="bottom-actions">
+    <button class="btn-soft" id="btnBack" type="button">Atrás</button>
+    <button class="btn-main" id="btnNext" type="button">Siguiente</button>
+    <button class="btn-main d-none d-md-block" id="btnSaveDesktop" type="button">Guardar PDF</button>
+  </div>
+</div>
+
+<div class="toast-app" id="toastApp">
+  <div class="box" id="toastText"></div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js"></script>
 <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
+/* =============================
+   CONFIGURACIÓN GENERAL
+============================= */
+
 pdfjsLib.GlobalWorkerOptions.workerSrc =
  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
+
+const TEMPLATE_URL = "plantilla.pdf";
+
+const STEPS = [
+  "Accidente",
+  "Vehículo",
+  "Relato",
+  "Responsabilidad",
+  "Terceros",
+  "Lesionados",
+  "Firma"
+];
 
 const pdfCanvas = document.getElementById("pdfCanvas");
 const drawCanvas = document.getElementById("drawCanvas");
 const pdfCtx = pdfCanvas.getContext("2d");
-const ctx = drawCanvas.getContext("2d");
+const overlayCtx = drawCanvas.getContext("2d");
 
-let pdfBytes, pdfDoc, pageCount = 0, currentPage = 1;
-let texts = [];
-let selected = null;
-let dragging = false;
-let dx = 0, dy = 0;
+const signatureCanvas = document.getElementById("signatureCanvas");
+const sigCtx = signatureCanvas.getContext("2d");
 
-function getScale(){
-  return window.innerWidth < 768 ? 1 : 1.4;
-}
+let pdfBytes = null;
+let pdfDoc = null;
+let pageCount = 0;
+let currentPage = 1;
+let currentStep = 0;
+let zoom = window.innerWidth < 900 ? 0.78 : 1.25;
+let fields = {};
+let signatureHasData = false;
+let sigDrawing = false;
 
-function redraw(){
-  ctx.clearRect(0,0,drawCanvas.width,drawCanvas.height);
+/*
+  Coordenadas en porcentaje sobre cada página.
+  xPct y yPct se usan para vista previa en canvas.
+  Al guardar, se convierten a coordenadas reales del PDF.
+*/
+const PDF_PAGE_W = 594.96;
+const PDF_PAGE_H = 842.52;
 
-  texts.filter(t=>t.page===currentPage).forEach(t=>{
-    const x = t.xPct * drawCanvas.width;
-    const y = t.yPct * drawCanvas.height;
+/*
+  Coordenadas calibradas en puntos PDF (A4 594.96 x 842.52).
+  x y y se miden desde la esquina superior izquierda de la página.
+  Esto evita que el zoom o el tamaño del canvas desplacen los datos.
+*/
+const FIELD_MAP = {
+  // Página 1 - Encabezado y tabla principal
+  lugarAccidente:{page:1,x:17,y:188,size:7.5,maxWidth:90,lines:2,lineHeight:8,minSize:5.2},
+  ciudad:{page:1,x:113,y:191,size:7.5,maxWidth:62,minSize:5.8},
+  municipio:{page:1,x:180,y:191,size:7.5,maxWidth:78,lines:2,lineHeight:8,minSize:5.2},
+  fechaSiniestro:{page:1,x:282,y:191,size:7.5,maxWidth:90,type:"date"},
+  fechaReporte:{page:1,x:394,y:191,size:7.5,maxWidth:88,type:"date"},
+  poliza:{page:1,x:491,y:191,size:7.5,maxWidth:84,minSize:5.8},
 
-    ctx.font = `${t.size}px Arial`;
-    ctx.fillStyle = "black";
-    ctx.fillText(t.text, x, y);
+  tomador:{page:1,x:102,y:213,size:7.5,maxWidth:380,minSize:5.8},
+  nitTomador:{page:1,x:525,y:213,size:7.5,maxWidth:55,minSize:5.5},
+  asegurado:{page:1,x:110,y:236,size:7.5,maxWidth:370,minSize:5.8},
+  nitAsegurado:{page:1,x:525,y:236,size:7.5,maxWidth:55,minSize:5.5},
+  direccionAsegurado:{page:1,x:116,y:260,size:7.5,maxWidth:265,minSize:5.5},
+  ciudadAsegurado:{page:1,x:420,y:260,size:7.5,maxWidth:70},
+  telefono1:{page:1,x:532,y:260,size:7.5,maxWidth:48},
+  correo:{page:1,x:180,y:284,size:7.2,maxWidth:200,minSize:5.3},
+  telefono2:{page:1,x:430,y:284,size:7.5,maxWidth:58},
+  celular:{page:1,x:522,y:284,size:7.5,maxWidth:58},
 
-    if(t===selected){
-      const w = ctx.measureText(t.text).width;
-      ctx.strokeStyle = "blue";
-      ctx.strokeRect(x-4, y-t.size-4, w+8, t.size+8);
-    }
-  });
-}
+  marca:{page:1,x:17,y:320,size:7.5,maxWidth:90,minSize:5.5},
+  tipo:{page:1,x:113,y:320,size:7.5,maxWidth:62,minSize:5.5},
+  placa:{page:1,x:180,y:320,size:7.5,maxWidth:78,minSize:5.5},
+  modelo:{page:1,x:263,y:320,size:7.5,maxWidth:112,minSize:5.5},
+  capacidad:{page:1,x:382,y:320,size:7.5,maxWidth:100,minSize:5.5},
+  color:{page:1,x:491,y:320,size:7.5,maxWidth:86,minSize:5.5},
 
-function pos(e){
-  const r = drawCanvas.getBoundingClientRect();
-  const p = e.touches ? e.touches[0] : e;
-  return {x:p.clientX-r.left,y:p.clientY-r.top};
-}
+  conductorTelefono:{page:1,x:150,y:346,size:7.3,maxWidth:225,minSize:5.2},
+  documentoConductor:{page:1,x:488,y:346,size:7.3,maxWidth:85,minSize:5.2},
 
-function hit(x,y){
-  const pad = 12;
-  return texts.find(t=>{
-    if(t.page!==currentPage) return false;
-    ctx.font = `${t.size}px Arial`;
-    const tx = t.xPct * drawCanvas.width;
-    const ty = t.yPct * drawCanvas.height;
-    const w = ctx.measureText(t.text).width;
-    return x>=tx-pad && x<=tx+w+pad && y>=ty-t.size-pad && y<=ty+pad;
-  });
-}
+  // Página 1 - Relato
+  diaHecho:{page:1,x:51,y:450,size:8,maxWidth:28},
+  mesHecho:{page:1,x:118,y:450,size:8,maxWidth:68},
+  anioHecho:{page:1,x:224,y:450,size:8,maxWidth:38},
+  horaHecho:{page:1,x:414,y:450,size:8,maxWidth:32},
+  direccionHecho:{page:1,x:203,y:461,size:8,maxWidth:130,minSize:5.5},
+  relato:{page:1,x:20,y:475,size:8,maxWidth:555,lineHeight:11,lines:5},
 
-function start(e){
-  e.preventDefault();
-  const {x,y} = pos(e);
-  selected = hit(x,y);
+  // Página 1 - Marcas y responsabilidad
+  lesionados:{page:1,x:128,y:540,size:8,maxWidth:20,mark:true,noX:160},
+  cuantosLesionados:{page:1,x:225,y:540,size:8,maxWidth:38},
+  fallecidos:{page:1,x:372,y:540,size:8,maxWidth:20,mark:true,noX:404},
+  cuantosFallecidos:{page:1,x:470,y:540,size:8,maxWidth:38},
+  causa:{page:1,x:166,y:570,size:8,maxWidth:20,cause:true},
+  gradoResponsabilidad:{page:1,x:187,y:612,size:8,maxWidth:28},
+  responsabilidadCompartida:{page:1,x:33,y:643,size:8,maxWidth:20,mark:true,noX:70},
+  porqueResponsabilidad:{page:1,x:144,y:643,size:7.5,maxWidth:430,minSize:5.2},
+  informeAutoridad:{page:1,x:33,y:674,size:8,maxWidth:20,mark:true,noX:70},
+  danosVehiculo:{page:1,x:20,y:707,size:8,maxWidth:530,lineHeight:11,lines:4},
 
-  if(selected){
-    dragging = true;
-    dx = x - (selected.xPct * drawCanvas.width);
-    dy = y - (selected.yPct * drawCanvas.height);
-  }else{
-    const t = prompt("Texto:");
-    if(t){
-      texts.push({
-        text:t,
-        xPct:x/drawCanvas.width,
-        yPct:y/drawCanvas.height,
-        size:14,
-        page:currentPage
-      });
-    }
-  }
-  redraw();
-}
+  // Página 2 - Vehículo tercero 1
+  t1Marca:{page:2,x:17,y:130,size:7,maxWidth:90},
+  t1Modelo:{page:2,x:113,y:130,size:7,maxWidth:65},
+  t1Color:{page:2,x:181,y:130,size:7,maxWidth:80},
+  t1Placas:{page:2,x:263,y:130,size:7,maxWidth:110},
+  t1Servicio:{page:2,x:382,y:130,size:7,maxWidth:100},
+  t1Asegurado:{page:2,x:491,y:130,size:7,maxWidth:86},
+  t1Conductor:{page:2,x:70,y:158,size:7,maxWidth:190},
+  t1Licencia:{page:2,x:338,y:158,size:7,maxWidth:50},
+  t1Cedula:{page:2,x:418,y:158,size:7,maxWidth:70},
+  t1Propietario:{page:2,x:490,y:158,size:7,maxWidth:90},
+  t1Direccion:{page:2,x:17,y:198,size:7,maxWidth:160},
+  t1Ciudad:{page:2,x:182,y:198,size:7,maxWidth:78},
+  t1Telefono:{page:2,x:267,y:198,size:7,maxWidth:110},
+  t1Ubicacion:{page:2,x:383,y:198,size:7,maxWidth:190},
+  t1Danos:{page:2,x:20,y:218,size:6.8,maxWidth:420,lineHeight:8,lines:2,minSize:5.3},
 
-function move(e){
-  if(!dragging || !selected) return;
-  const {x,y} = pos(e);
-  selected.xPct = (x-dx)/drawCanvas.width;
-  selected.yPct = (y-dy)/drawCanvas.height;
-  redraw();
-}
+  // Página 2 - Vehículo tercero 2
+  t2Marca:{page:2,x:17,y:283,size:7,maxWidth:90},
+  t2Modelo:{page:2,x:113,y:283,size:7,maxWidth:65},
+  t2Color:{page:2,x:181,y:283,size:7,maxWidth:80},
+  t2Placas:{page:2,x:263,y:283,size:7,maxWidth:110},
+  t2Servicio:{page:2,x:382,y:283,size:7,maxWidth:100},
+  t2Asegurado:{page:2,x:491,y:283,size:7,maxWidth:86},
+  t2Conductor:{page:2,x:70,y:311,size:7,maxWidth:190},
+  t2Licencia:{page:2,x:338,y:311,size:7,maxWidth:50},
+  t2Cedula:{page:2,x:418,y:311,size:7,maxWidth:70},
+  t2Propietario:{page:2,x:490,y:311,size:7,maxWidth:90},
+  t2Direccion:{page:2,x:17,y:351,size:7,maxWidth:160},
+  t2Ciudad:{page:2,x:182,y:351,size:7,maxWidth:78},
+  t2Telefono:{page:2,x:267,y:351,size:7,maxWidth:110},
+  t2Ubicacion:{page:2,x:383,y:351,size:7,maxWidth:190},
+  t2Danos:{page:2,x:20,y:371,size:6.8,maxWidth:420,lineHeight:8,lines:2,minSize:5.3},
 
-function end(){
-  dragging = false;
-}
+  // Página 2 - Lesionado 1
+  l1Nombre:{page:2,x:100,y:450,size:7,maxWidth:84},
+  l1Cedula:{page:2,x:215,y:450,size:7,maxWidth:108},
+  l1Direccion:{page:2,x:370,y:450,size:7,maxWidth:92},
+  l1Telefono:{page:2,x:502,y:450,size:7,maxWidth:75},
+  l1Hospital:{page:2,x:331,y:472,size:7,maxWidth:240,minSize:5.3},
 
-drawCanvas.addEventListener("mousedown",start);
-drawCanvas.addEventListener("touchstart",start);
-window.addEventListener("mousemove",move);
-window.addEventListener("touchmove",move);
-window.addEventListener("mouseup",end);
-window.addEventListener("touchend",end);
-
-drawCanvas.addEventListener("dblclick",()=>{
-  if(!selected) return;
-  const t = prompt("Editar texto:",selected.text);
-  if(t!==null){
-    selected.text = t;
-    redraw();
-  }
-});
-
-window.addEventListener("keydown",e=>{
-  if(e.key==="Delete" && selected){
-    texts = texts.filter(t=>t!==selected);
-    selected = null;
-    redraw();
-  }
-});
-
-async function renderPage(n){
-  currentPage = n;
-  const page = await pdfDoc.getPage(n);
-  const vp = page.getViewport({scale:getScale()});
-  pdfCanvas.width = drawCanvas.width = vp.width;
-  pdfCanvas.height = drawCanvas.height = vp.height;
-  await page.render({canvasContext:pdfCtx,viewport:vp}).promise;
-  redraw();
-  pageInfo.innerText = `Página ${n} / ${pageCount}`;
-}
-
-btnLoad.onclick = async ()=>{
-  const r = await fetch("plantilla.pdf");
-  pdfBytes = await r.arrayBuffer();
-  pdfDoc = await pdfjsLib.getDocument({data:pdfBytes}).promise;
-  pageCount = pdfDoc.numPages;
-  renderPage(1);
-  btnSave.disabled = false;
+  // Página 2 - Fallecido 1
+  f1Nombre:{page:2,x:98,y:632,size:7,maxWidth:86},
+  f1Cedula:{page:2,x:215,y:632,size:7,maxWidth:108},
+  f1Direccion:{page:2,x:370,y:632,size:7,maxWidth:92},
+  f1Telefono:{page:2,x:502,y:632,size:7,maxWidth:75},
+  f1Lugar:{page:2,x:178,y:653,size:7,maxWidth:148,minSize:5.2},
+  f1Genero:{page:2,x:360,y:653,size:7,maxWidth:100},
+  f1Edad:{page:2,x:486,y:653,size:7,maxWidth:70}
 };
 
-prevPage.onclick = ()=>currentPage>1 && renderPage(currentPage-1);
-nextPage.onclick = ()=>currentPage<pageCount && renderPage(currentPage+1);
+// Campos que se repiten automáticamente en otra parte del PDF
+const EXTRA_FIELD_MAP = {
+  municipioRelato:{source:"municipio",page:1,x:62,y:461,size:8,maxWidth:92},
+  placaRelato:{source:"placa",page:1,x:515,y:420,size:8,maxWidth:65}
+};
 
-btnSave.onclick = async ()=>{
-  const {PDFDocument} = PDFLib;
-  const out = await PDFDocument.load(pdfBytes);
-  const pages = out.getPages();
+const CAUSE_MARKS = {
+  A:{page:1,x:166,y:570},
+  B:{page:1,x:267,y:570},
+  C:{page:1,x:399,y:570},
+  D:{page:1,x:512,y:570}
+};
 
-  texts.forEach(t=>{
-    const p = pages[t.page-1];
-    p.drawText(t.text,{
-      x: t.xPct * p.getWidth(),
-      y: p.getHeight() - (t.yPct * p.getHeight()),
-      size: t.size
+const SIGNATURE_BOX = {page:1,x:17,y:118,width:250,height:26};
+
+/* =============================
+   INICIO
+============================= */
+
+document.addEventListener("DOMContentLoaded", async () => {
+  buildSteps();
+  bindInputs();
+  bindButtons();
+  setupSignatureCanvas();
+
+  try{
+    await loadTemplate();
+    showToast("Plantilla cargada correctamente.");
+  }catch(err){
+    console.error(err);
+    showToast("No se pudo cargar plantilla.pdf. Verifica que esté en la misma carpeta del HTML.");
+    document.getElementById("statusTemplate").textContent = "Plantilla no cargada";
+  }finally{
+    document.getElementById("loading").style.display = "none";
+  }
+
+  showStep(0);
+});
+
+/* =============================
+   PASOS / UI
+============================= */
+
+function buildSteps(){
+  const box = document.getElementById("stepIndicator");
+  box.innerHTML = "";
+  STEPS.forEach((name,idx)=>{
+    const b = document.createElement("button");
+    b.className = "step-dot";
+    b.textContent = `${idx+1}. ${name}`;
+    b.onclick = () => showStep(idx);
+    box.appendChild(b);
+  });
+}
+
+function showStep(idx){
+  currentStep = idx;
+  document.querySelectorAll(".step").forEach(step=>{
+    step.style.display = Number(step.dataset.step) === idx ? "block" : "none";
+  });
+
+  document.querySelectorAll(".step-dot").forEach((btn,i)=>{
+    btn.classList.toggle("active", i === idx);
+  });
+
+  document.getElementById("btnBack").disabled = idx === 0;
+  document.getElementById("btnNext").textContent = idx === STEPS.length - 1 ? "Guardar PDF" : "Siguiente";
+
+  if(idx === STEPS.length - 1){
+    document.getElementById("viewerCard").style.display = "block";
+    setTimeout(renderCurrentPage, 150);
+  }
+}
+
+function bindButtons(){
+  document.getElementById("btnBack").onclick = () => {
+    if(currentStep > 0) showStep(currentStep - 1);
+  };
+
+  document.getElementById("btnNext").onclick = async () => {
+    if(currentStep < STEPS.length - 1){
+      showStep(currentStep + 1);
+    }else{
+      await savePdf();
+    }
+  };
+
+  document.getElementById("btnSaveDesktop").onclick = savePdf;
+
+  document.getElementById("btnShowPreview").onclick = () => {
+    document.getElementById("viewerCard").style.display = "block";
+    renderCurrentPage();
+    document.getElementById("viewerCard").scrollIntoView({behavior:"smooth", block:"start"});
+  };
+
+  document.getElementById("prevPage").onclick = () => {
+    if(currentPage > 1){
+      currentPage--;
+      renderCurrentPage();
+    }
+  };
+
+  document.getElementById("nextPage").onclick = () => {
+    if(currentPage < pageCount){
+      currentPage++;
+      renderCurrentPage();
+    }
+  };
+
+  document.getElementById("zoomIn").onclick = () => {
+    zoom = Math.min(2.2, zoom + .15);
+    renderCurrentPage();
+  };
+
+  document.getElementById("zoomOut").onclick = () => {
+    zoom = Math.max(.45, zoom - .15);
+    renderCurrentPage();
+  };
+
+  document.getElementById("btnClearSignature").onclick = () => {
+    clearSignature();
+    showToast("Firma limpiada.");
+  };
+}
+
+function bindInputs(){
+  document.querySelectorAll(".pdf-field").forEach(input=>{
+    const key = input.dataset.key;
+    fields[key] = input.value || "";
+
+    input.addEventListener("input",()=>{
+      fields[key] = input.value || "";
+      updateFieldCount();
+      if(document.getElementById("viewerCard").style.display !== "none"){
+        drawOverlay();
+      }
+    });
+
+    input.addEventListener("change",()=>{
+      fields[key] = input.value || "";
+      updateFieldCount();
+      drawOverlay();
     });
   });
+}
 
-  const bytes = await out.save();
+function updateFieldCount(){
+  const count = Object.values(fields).filter(v => String(v || "").trim()).length;
+  document.getElementById("statusFields").textContent = `Campos: ${count}`;
+}
+
+function showToast(msg){
+  const toast = document.getElementById("toastApp");
+  document.getElementById("toastText").textContent = msg;
+  toast.style.display = "block";
+  clearTimeout(showToast.timer);
+  showToast.timer = setTimeout(()=> toast.style.display = "none", 2600);
+}
+
+/* =============================
+   PDF PREVIEW
+============================= */
+
+async function loadTemplate(){
+  const res = await fetch(TEMPLATE_URL);
+  if(!res.ok) throw new Error("No se encontró plantilla.pdf");
+  pdfBytes = await res.arrayBuffer();
+  pdfDoc = await pdfjsLib.getDocument({data:pdfBytes}).promise;
+  pageCount = pdfDoc.numPages;
+  await renderCurrentPage();
+}
+
+async function renderCurrentPage(){
+  if(!pdfDoc) return;
+  const page = await pdfDoc.getPage(currentPage);
+  const vp = page.getViewport({scale:zoom});
+
+  pdfCanvas.width = drawCanvas.width = vp.width;
+  pdfCanvas.height = drawCanvas.height = vp.height;
+
+  await page.render({canvasContext:pdfCtx, viewport:vp}).promise;
+  document.getElementById("pageInfo").textContent = `Página ${currentPage} / ${pageCount}`;
+  drawOverlay();
+}
+
+function getDrawableItems(){
+  const base = Object.keys(FIELD_MAP).map(key => ({
+    key,
+    cfg: FIELD_MAP[key],
+    value: fields[key]
+  }));
+
+  const extras = Object.keys(EXTRA_FIELD_MAP).map(key => {
+    const cfg = EXTRA_FIELD_MAP[key];
+    return {
+      key,
+      cfg,
+      value: fields[cfg.source]
+    };
+  });
+
+  return base.concat(extras);
+}
+
+function drawOverlay(){
+  overlayCtx.clearRect(0,0,drawCanvas.width,drawCanvas.height);
+  overlayCtx.fillStyle = "black";
+  overlayCtx.strokeStyle = "#0d6efd";
+  overlayCtx.lineWidth = 1;
+
+  getDrawableItems().forEach(item=>{
+    const cfg = item.cfg;
+    if(cfg.page !== currentPage) return;
+
+    let value = item.value || "";
+    if(!String(value).trim()) return;
+
+    value = formatValueForField(item.key, value, cfg);
+
+    const fontSize = Math.max(7, cfg.size * zoom);
+    overlayCtx.font = `${fontSize}px Arial`;
+    overlayCtx.fillStyle = "black";
+
+    if(cfg.mark){
+      drawCanvasMark(value, cfg, fontSize);
+      return;
+    }
+
+    if(cfg.cause){
+      drawCanvasCauseMark(value, fontSize);
+      return;
+    }
+
+    const x = cfg.x * zoom;
+    const y = cfg.y * zoom;
+    drawCanvasWrappedText(overlayCtx, value, x, y, cfg.maxWidth * zoom, fontSize, cfg);
+  });
+
+  if(currentPage === 1 && signatureHasData){
+    overlayCtx.drawImage(
+      signatureCanvas,
+      SIGNATURE_BOX.x * zoom,
+      SIGNATURE_BOX.y * zoom,
+      SIGNATURE_BOX.width * zoom,
+      SIGNATURE_BOX.height * zoom
+    );
+  }
+}
+
+function drawCanvasMark(value, cfg, fontSize){
+  const val = String(value).toUpperCase();
+  const x = (val === "NO" && cfg.noX ? cfg.noX : cfg.x) * zoom;
+  const y = cfg.y * zoom;
+  overlayCtx.font = `bold ${fontSize}px Arial`;
+  overlayCtx.fillText("X", x, y);
+}
+
+function drawCanvasCauseMark(value, fontSize){
+  const val = String(value).toUpperCase();
+  const pos = CAUSE_MARKS[val];
+  if(!pos || pos.page !== currentPage) return;
+  overlayCtx.font = `bold ${fontSize}px Arial`;
+  overlayCtx.fillText("X", pos.x * zoom, pos.y * zoom);
+}
+
+function measureCanvasLines(ctx, text, size, maxWidth){
+  ctx.font = `${size}px Arial`;
+  const words = String(text).split(/\s+/).filter(Boolean);
+  if(!words.length) return [""];
+
+  const lines = [];
+  let line = "";
+
+  for(const word of words){
+    const test = line ? line + " " + word : word;
+    if(ctx.measureText(test).width > maxWidth && line){
+      lines.push(line);
+      line = word;
+    }else{
+      line = test;
+    }
+  }
+  if(line) lines.push(line);
+  return lines;
+}
+
+function addEllipsisCanvas(ctx, line, size, maxWidth){
+  ctx.font = `${size}px Arial`;
+  let out = String(line || "");
+  while(out && ctx.measureText(out + "...").width > maxWidth){
+    out = out.slice(0, -1).trimEnd();
+  }
+  return out ? out + "..." : "...";
+}
+
+function fitCanvasText(ctx, text, maxWidth, startSize, cfg){
+  const maxLines = cfg.lines || 1;
+  const minSize = cfg.minSize || Math.min(startSize, 5.5);
+  let size = startSize;
+  let lines = measureCanvasLines(ctx, text, size, maxWidth);
+
+  while(size > minSize && lines.length > maxLines){
+    size = Math.max(minSize, +(size - 0.25).toFixed(2));
+    lines = measureCanvasLines(ctx, text, size, maxWidth);
+  }
+
+  if(lines.length > maxLines){
+    lines = lines.slice(0, maxLines);
+    lines[maxLines - 1] = addEllipsisCanvas(ctx, lines[maxLines - 1], size, maxWidth);
+  }
+
+  return { size, lines };
+}
+
+function drawCanvasWrappedText(ctx, text, x, y, maxWidth, fontSize, cfg){
+  const fitted = fitCanvasText(ctx, text, maxWidth, fontSize, cfg);
+  const lineHeight = cfg.lineHeight ? cfg.lineHeight * zoom : fitted.size * 1.2;
+  ctx.font = `${fitted.size}px Arial`;
+  fitted.lines.forEach((ln,i)=> ctx.fillText(ln, x, y + (i * lineHeight)));
+}
+
+/* =============================
+   FIRMA
+============================= */
+
+function setupSignatureCanvas(){
+  resizeSignatureCanvas();
+
+  window.addEventListener("resize",()=>{
+    const oldData = signatureCanvas.toDataURL("image/png");
+    resizeSignatureCanvas();
+    if(signatureHasData){
+      const img = new Image();
+      img.onload = () => sigCtx.drawImage(img,0,0,signatureCanvas.width,signatureCanvas.height);
+      img.src = oldData;
+    }
+  });
+
+  signatureCanvas.addEventListener("pointerdown", startSignature);
+  signatureCanvas.addEventListener("pointermove", moveSignature);
+  window.addEventListener("pointerup", endSignature);
+}
+
+function resizeSignatureCanvas(){
+  const box = signatureCanvas.getBoundingClientRect();
+  const ratio = window.devicePixelRatio || 1;
+  signatureCanvas.width = Math.max(320, box.width * ratio);
+  signatureCanvas.height = 210 * ratio;
+  sigCtx.setTransform(ratio,0,0,ratio,0,0);
+  sigCtx.lineWidth = 2.2;
+  sigCtx.lineCap = "round";
+  sigCtx.strokeStyle = "#111827";
+}
+
+function signaturePos(e){
+  const r = signatureCanvas.getBoundingClientRect();
+  return {x:e.clientX-r.left, y:e.clientY-r.top};
+}
+
+function startSignature(e){
+  e.preventDefault();
+  sigDrawing = true;
+  signatureHasData = true;
+  const p = signaturePos(e);
+  sigCtx.beginPath();
+  sigCtx.moveTo(p.x,p.y);
+}
+
+function moveSignature(e){
+  if(!sigDrawing) return;
+  e.preventDefault();
+  const p = signaturePos(e);
+  sigCtx.lineTo(p.x,p.y);
+  sigCtx.stroke();
+  drawOverlay();
+}
+
+function endSignature(){
+  sigDrawing = false;
+}
+
+function clearSignature(){
+  sigCtx.clearRect(0,0,signatureCanvas.width,signatureCanvas.height);
+  signatureHasData = false;
+  drawOverlay();
+}
+
+/* =============================
+   GENERAR PDF
+============================= */
+
+async function savePdf(){
+  if(!pdfBytes){
+    showToast("La plantilla todavía no está cargada.");
+    return;
+  }
+
+  try{
+    document.getElementById("loading").style.display = "flex";
+    document.querySelector("#loading h5").textContent = "Generando PDF";
+    document.querySelector("#loading p").textContent = "Insertando los datos y preparando la descarga.";
+
+    const { PDFDocument, StandardFonts, rgb } = PDFLib;
+    const out = await PDFDocument.load(pdfBytes);
+    const font = await out.embedFont(StandardFonts.Helvetica);
+    const pages = out.getPages();
+
+    getDrawableItems().forEach(item=>{
+      const raw = item.value;
+      if(!String(raw || "").trim()) return;
+
+      const cfg = item.cfg;
+      const page = pages[cfg.page - 1];
+      if(!page) return;
+
+      const width = page.getWidth();
+      const height = page.getHeight();
+      const scaleX = width / PDF_PAGE_W;
+      const scaleY = height / PDF_PAGE_H;
+
+      const value = formatValueForField(item.key, raw, cfg);
+      const x = cfg.x * scaleX;
+      const y = height - (cfg.y * scaleY);
+      const fontSize = cfg.size * scaleY;
+
+      if(cfg.mark){
+        drawMark(page, cfg, raw, font, fontSize, scaleX, scaleY);
+      }else if(cfg.cause){
+        drawCauseMark(page, raw, font, fontSize, scaleX, scaleY);
+      }else{
+        drawPdfWrappedText(page, value, x, y, cfg.maxWidth * scaleX, font, fontSize, cfg, scaleY);
+      }
+    });
+
+    if(signatureHasData){
+      const pngDataUrl = signatureCanvas.toDataURL("image/png");
+      const pngBytes = dataUrlToUint8Array(pngDataUrl);
+      const sigImg = await out.embedPng(pngBytes);
+      const page = pages[0];
+      const scaleX = page.getWidth() / PDF_PAGE_W;
+      const scaleY = page.getHeight() / PDF_PAGE_H;
+      page.drawImage(sigImg,{
+        x: SIGNATURE_BOX.x * scaleX,
+        y: page.getHeight() - ((SIGNATURE_BOX.y + SIGNATURE_BOX.height) * scaleY),
+        width: SIGNATURE_BOX.width * scaleX,
+        height: SIGNATURE_BOX.height * scaleY
+      });
+    }
+
+    const bytes = await out.save();
+    const placa = cleanFilePart(fields.placa || "SINIESTRO");
+    const fecha = cleanFilePart(formatDateForFile(fields.fechaSiniestro) || new Date().toISOString().slice(0,10));
+    downloadBytes(bytes, `SINIESTRO_${placa}_${fecha}.pdf`);
+
+    showToast("PDF generado correctamente.");
+  }catch(err){
+    console.error(err);
+    showToast("No se pudo generar el PDF. Revisa la consola para más detalle.");
+  }finally{
+    document.getElementById("loading").style.display = "none";
+    document.querySelector("#loading h5").textContent = "Preparando formulario";
+    document.querySelector("#loading p").textContent = "Cargando la plantilla y dejando todo listo para diligenciar.";
+  }
+}
+
+function measurePdfLines(text, font, size, maxWidth){
+  const words = String(text).split(/\s+/).filter(Boolean);
+  if(!words.length) return [""];
+
+  const lines = [];
+  let line = "";
+
+  for(const word of words){
+    const test = line ? line + " " + word : word;
+    const testWidth = font.widthOfTextAtSize(test, size);
+    if(testWidth > maxWidth && line){
+      lines.push(line);
+      line = word;
+    }else{
+      line = test;
+    }
+  }
+  if(line) lines.push(line);
+  return lines;
+}
+
+function addEllipsisPdf(line, font, size, maxWidth){
+  let out = String(line || "");
+  while(out && font.widthOfTextAtSize(out + "...", size) > maxWidth){
+    out = out.slice(0, -1).trimEnd();
+  }
+  return out ? out + "..." : "...";
+}
+
+function fitPdfText(text, font, startSize, maxWidth, cfg){
+  const maxLines = cfg.lines || 1;
+  const minSize = cfg.minSize || Math.min(startSize, 5.5);
+  let size = startSize;
+  let lines = measurePdfLines(text, font, size, maxWidth);
+
+  while(size > minSize && lines.length > maxLines){
+    size = Math.max(minSize, +(size - 0.25).toFixed(2));
+    lines = measurePdfLines(text, font, size, maxWidth);
+  }
+
+  if(lines.length > maxLines){
+    lines = lines.slice(0, maxLines);
+    lines[maxLines - 1] = addEllipsisPdf(lines[maxLines - 1], font, size, maxWidth);
+  }
+
+  return { size, lines };
+}
+
+function drawPdfWrappedText(page, text, x, y, maxWidth, font, size, cfg, scaleY){
+  const fitted = fitPdfText(text, font, size, maxWidth, cfg);
+  const lineHeight = cfg.lineHeight ? cfg.lineHeight * scaleY : fitted.size * 1.25;
+
+  fitted.lines.forEach((ln,i)=>{
+    page.drawText(ln,{
+      x,
+      y: y - (i * lineHeight),
+      size: fitted.size,
+      font,
+      color: rgb(0,0,0)
+    });
+  });
+}
+
+function drawMark(page, cfg, rawValue, font, size, scaleX, scaleY){
+  const val = String(rawValue).toUpperCase();
+  const markX = (val === "NO" && cfg.noX ? cfg.noX : cfg.x) * scaleX;
+  const markY = page.getHeight() - (cfg.y * scaleY);
+
+  page.drawText("X",{
+    x: markX,
+    y: markY,
+    size:size+1,
+    font,
+    color: rgb(0,0,0)
+  });
+}
+
+function drawCauseMark(page, rawValue, font, size, scaleX, scaleY){
+  const val = String(rawValue).toUpperCase();
+  const pos = CAUSE_MARKS[val];
+  if(!pos) return;
+
+  page.drawText("X",{
+    x: pos.x * scaleX,
+    y: page.getHeight() - (pos.y * scaleY),
+    size:size+1,
+    font,
+    color: rgb(0,0,0)
+  });
+}
+
+function formatValueForField(key, value, cfg){
+  let v = String(value || "").trim();
+
+  if(cfg.type === "date"){
+    return formatDate(v);
+  }
+
+  if(key.toLowerCase().includes("placa")){
+    return v.toUpperCase();
+  }
+
+  return v;
+}
+
+function formatDate(v){
+  if(!v) return "";
+  if(/^\d{4}-\d{2}-\d{2}$/.test(v)){
+    const [y,m,d] = v.split("-");
+    return `${d}/${m}/${y}`;
+  }
+  return v;
+}
+
+function formatDateForFile(v){
+  if(!v) return "";
+  return String(v).replaceAll("/","-");
+}
+
+function cleanFilePart(v){
+  return String(v).trim().replace(/[^\w\-]+/g,"_").toUpperCase();
+}
+
+function dataUrlToUint8Array(dataUrl){
+  const base64 = dataUrl.split(",")[1];
+  const binary = atob(base64);
+  const len = binary.length;
+  const bytes = new Uint8Array(len);
+  for(let i=0;i<len;i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+
+function downloadBytes(bytes, filename){
+  const blob = new Blob([bytes], {type:"application/pdf"});
+  const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob([bytes],{type:"application/pdf"}));
-  a.download = "PDF_EDITADO.pdf";
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
   a.click();
-};
+  setTimeout(()=>{
+    URL.revokeObjectURL(url);
+    a.remove();
+  }, 1000);
+}
 </script>
 
 </body>
