@@ -1,0 +1,2472 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Formulario Móvil de Siniestros – Soluasistencia</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+:root{
+  --verde:#008f45;
+  --verde-oscuro:#006d36;
+  --azul:#17213b;
+  --gris:#f3f5f7;
+  --borde:#dbe1e8;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:Arial, Helvetica, sans-serif;
+  background:var(--gris);
+  color:#1f2937;
+  overflow-x:hidden;
+}
+
+.app-header{
+  position:sticky;
+  top:0;
+  z-index:50;
+  background:linear-gradient(135deg,var(--verde),var(--verde-oscuro));
+  color:white;
+  padding:12px 14px;
+  box-shadow:0 3px 14px rgba(0,0,0,.18);
+}
+
+.app-header h1{
+  font-size:17px;
+  margin:0;
+  font-weight:800;
+}
+
+.app-header small{
+  opacity:.9;
+  font-size:12px;
+}
+
+.brand-wrap{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  justify-content:space-between;
+  max-width:1180px;
+  margin:0 auto;
+}
+
+.brand-left{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-width:0;
+  flex:1;
+}
+
+.header-actions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-shrink:0;
+}
+
+.header-action-btn{
+  background:rgba(255,255,255,.18);
+  border:1px solid rgba(255,255,255,.4);
+  color:#fff;
+  border-radius:10px;
+  padding:7px 11px;
+  font-size:12px;
+  font-weight:700;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  white-space:nowrap;
+}
+.header-action-btn:hover{background:rgba(255,255,255,.28)}
+
+.brand-logo{
+  width:58px;
+  height:58px;
+  object-fit:contain;
+  background:#fff;
+  border-radius:14px;
+  padding:6px;
+  box-shadow:0 4px 12px rgba(0,0,0,.18);
+}
+
+.brand-text{
+  min-width:0;
+}
+
+.loading-logo{
+  width:78px;
+  height:auto;
+  margin:0 auto 12px;
+  display:block;
+}
+
+.main-wrap{
+  padding:12px;
+  padding-bottom:96px;
+}
+
+.card-mobile{
+  background:white;
+  border:1px solid var(--borde);
+  border-radius:18px;
+  box-shadow:0 8px 24px rgba(15,23,42,.07);
+  overflow:hidden;
+}
+
+.step-indicator{
+  display:flex;
+  gap:6px;
+  overflow-x:auto;
+  padding:10px 12px;
+  background:white;
+  border-bottom:1px solid var(--borde);
+}
+
+.step-dot{
+  min-width:max-content;
+  border:1px solid var(--borde);
+  background:#fff;
+  color:#526170;
+  border-radius:999px;
+  padding:7px 10px;
+  font-size:12px;
+  font-weight:700;
+  cursor:pointer;
+}
+
+.step-dot.active{
+  background:var(--verde);
+  color:#fff;
+  border-color:var(--verde);
+}
+
+.step-body{
+  padding:14px;
+}
+
+.step-title{
+  font-size:18px;
+  font-weight:800;
+  color:var(--azul);
+  margin-bottom:4px;
+}
+
+.step-help{
+  color:#6b7280;
+  font-size:13px;
+  margin-bottom:12px;
+}
+
+label{
+  font-size:13px;
+  color:#374151;
+  font-weight:700;
+  margin-bottom:4px;
+}
+
+.form-control,.form-select{
+  border-radius:12px;
+  min-height:46px;
+  /* 16px evita el zoom automático de iOS Safari al enfocar */
+  font-size:16px;
+}
+
+textarea.form-control{
+  min-height:105px;
+}
+
+.quick-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:9px;
+}
+
+.viewer-card{
+  margin-top:12px;
+  display:block;
+}
+
+.viewer-title-mobile{
+  padding:12px 14px;
+  border-bottom:1px solid var(--borde);
+  background:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  font-size:13px;
+  cursor:pointer;
+  user-select:none;
+}
+
+.viewer-title-mobile:hover{background:#f8fafc}
+
+.viewer-title-mobile span{
+  color:#6b7280;
+  font-size:12px;
+}
+
+.viewer-toggle-icon{
+  width:24px;
+  height:24px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  background:var(--verde);
+  color:#fff;
+  border-radius:50%;
+  font-weight:700;
+  font-size:14px;
+  flex-shrink:0;
+}
+
+.viewer-card.viewer-collapsed .viewer-toolbar,
+.viewer-card.viewer-collapsed .viewer{
+  display:none;
+}
+.viewer-card.viewer-collapsed .viewer-toggle-icon::before{content:"+"}
+.viewer-card:not(.viewer-collapsed) .viewer-toggle-icon::before{content:"−"}
+
+.viewer-toolbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  padding:10px;
+  border-bottom:1px solid var(--borde);
+  background:#fff;
+  position:sticky;
+  top:62px;
+  z-index:40;
+}
+
+.viewer-toolbar .btn{
+  border-radius:12px;
+  font-weight:800;
+}
+
+.viewer{
+  background:#cfd6df;
+  padding:10px;
+  overflow:auto;
+  max-height:72vh;
+  text-align:center;
+  -webkit-overflow-scrolling:touch;
+}
+
+.stage{
+  position:relative;
+  display:inline-block;
+  transform-origin:top center;
+}
+
+canvas{
+  display:block;
+  max-width:none;
+  touch-action:none;
+}
+
+#drawCanvas{
+  position:absolute;
+  inset:0;
+}
+
+.pdf-placeholder{
+  width:min(100%, 420px);
+  min-height:260px;
+  background:#fff;
+  border:1px dashed #9ca3af;
+  border-radius:16px;
+  padding:22px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  color:#374151;
+  text-align:center;
+  margin:auto;
+}
+
+.pdf-placeholder span{
+  font-size:13px;
+  color:#6b7280;
+}
+
+.mini-spinner{
+  width:34px;
+  height:34px;
+  border:4px solid #d8eadf;
+  border-top-color:var(--verde);
+  border-radius:50%;
+  animation:spin .9s linear infinite;
+}
+
+.bottom-bar{
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:0;
+  z-index:60;
+  background:#fff;
+  border-top:1px solid var(--borde);
+  box-shadow:0 -6px 22px rgba(0,0,0,.12);
+  padding:10px;
+}
+
+.bottom-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  max-width:980px;
+  margin:0 auto;
+}
+
+.btn-main{
+  background:var(--verde);
+  color:white;
+  border:none;
+  border-radius:14px;
+  min-height:48px;
+  font-weight:900;
+}
+
+.btn-main:disabled{
+  background:#93c5aa;
+  color:#fff;
+}
+
+.btn-soft{
+  background:#eef2f7;
+  color:#1f2937;
+  border:none;
+  border-radius:14px;
+  min-height:48px;
+  font-weight:900;
+}
+
+.btn-danger-soft{
+  background:#fee2e2;
+  color:#991b1b;
+  border:none;
+  border-radius:14px;
+  min-height:48px;
+  font-weight:900;
+}
+
+.badge-ok{
+  background:#e7f7ee;
+  color:#08723a;
+  border:1px solid #bce9cf;
+  padding:6px 9px;
+  border-radius:999px;
+  font-weight:800;
+  font-size:12px;
+}
+
+.badge-warn{
+  background:#fff7ed;
+  color:#9a3412;
+  border:1px solid #fed7aa;
+  padding:6px 9px;
+  border-radius:999px;
+  font-weight:800;
+  font-size:12px;
+}
+
+.signature-box{
+  border:2px dashed #9ca3af;
+  border-radius:16px;
+  background:#fff;
+  overflow:hidden;
+}
+
+#signatureCanvas{
+  width:100%;
+  height:210px;
+  background:#fff;
+  touch-action:none;
+}
+
+.help-box{
+  background:#eefcf3;
+  border:1px solid #bce9cf;
+  border-radius:14px;
+  padding:10px;
+  color:#075f31;
+  font-size:13px;
+}
+
+.text-pill{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  border:1px solid var(--borde);
+  background:#fff;
+  border-radius:12px;
+  padding:8px 10px;
+  margin-bottom:8px;
+  font-size:13px;
+}
+
+.loading-modal{
+  position:fixed;
+  inset:0;
+  background:rgba(255,255,255,.94);
+  z-index:200;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+
+.loader-card{
+  width:min(420px,100%);
+  background:#fff;
+  border:1px solid var(--borde);
+  border-radius:22px;
+  box-shadow:0 15px 45px rgba(0,0,0,.13);
+  padding:22px;
+  text-align:center;
+}
+
+.spinner{
+  width:48px;
+  height:48px;
+  border:5px solid #d8eadf;
+  border-top-color:var(--verde);
+  border-radius:50%;
+  animation:spin .9s linear infinite;
+  margin:0 auto 12px;
+}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.toast-app{
+  position:fixed;
+  left:12px;
+  right:12px;
+  bottom:86px;
+  z-index:180;
+  display:none;
+}
+
+.toast-app .box{
+  background:#111827;
+  color:#fff;
+  border-radius:14px;
+  padding:12px 14px;
+  font-size:14px;
+  box-shadow:0 10px 30px rgba(0,0,0,.25);
+}
+
+@media(min-width:900px){
+  .main-wrap{
+    max-width:1180px;
+    margin:0 auto;
+    display:grid;
+    grid-template-columns:1fr 420px;
+    gap:14px;
+    padding-bottom:20px;
+    align-items:start;
+  }
+
+  .viewer-card{
+    display:block !important;
+    margin-top:0;
+    position:sticky;
+    top:84px;
+    max-height:calc(100vh - 170px);
+    overflow:auto;
+  }
+
+  .viewer{
+    max-height:calc(100vh - 280px);
+  }
+
+  /* En desktop el viewer no debe colapsar (siempre visible al lado) */
+  .viewer-card.viewer-collapsed .viewer-toolbar,
+  .viewer-card.viewer-collapsed .viewer{
+    display:block;
+  }
+  .viewer-card.viewer-collapsed .viewer-toggle-icon{display:none}
+  .viewer-title-mobile{cursor:default}
+  .viewer-title-mobile:hover{background:#fff}
+
+  .bottom-bar{
+    position:sticky;
+    bottom:0;
+  }
+
+  /* Botones equilibrados, sin Guardar PDF duplicado */
+  .bottom-actions{
+    grid-template-columns:1fr 1fr;
+  }
+}
+
+@media(max-width:520px){
+  .main-wrap{
+    padding:8px;
+    padding-bottom:102px;
+  }
+
+  .step-body{
+    padding:12px;
+  }
+
+  .quick-grid{
+    grid-template-columns:1fr;
+  }
+
+  .viewer{
+    max-height:70vh;
+  }
+
+  .app-header h1{
+    font-size:15px;
+    line-height:1.2;
+  }
+
+  .app-header small{
+    font-size:11px;
+    /* Truncar a 1 línea con … para no apretar tanto el botón */
+    display:-webkit-box;
+    -webkit-line-clamp:1;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+  }
+
+  .brand-logo{
+    width:44px;
+    height:44px;
+    padding:5px;
+  }
+
+  .brand-wrap{
+    gap:8px;
+  }
+
+  /* En pantallas pequeñas, solo emoji para ahorrar espacio */
+  .header-action-btn .btn-label{display:none}
+  .header-action-btn{padding:8px 10px;font-size:16px}
+}
+
+/* Muy estrecho (<360px) — Inputs Bootstrap col-6 más cómodos */
+@media(max-width:360px){
+  .step-body .col-6{flex:0 0 100%;max-width:100%}
+}
+
+/* Validación */
+.pdf-field.is-invalid{
+  border-color:#dc3545 !important;
+  box-shadow:0 0 0 0.15rem rgba(220,53,69,.18) !important;
+}
+label.required::after{
+  content:" *";
+  color:#dc3545;
+  font-weight:700;
+}
+.missing-banner{
+  background:#fff3cd;
+  border:1px solid #ffe69c;
+  color:#664d03;
+  border-radius:10px;
+  padding:10px 12px;
+  margin:10px 12px 0;
+  font-size:13px;
+}
+.missing-banner strong{display:block;margin-bottom:4px}
+.restored-toast{
+  background:#cff4fc;
+  border:1px solid #b6effb;
+  color:#055160;
+  border-radius:10px;
+  padding:10px 12px;
+  margin:10px 12px 0;
+  font-size:13px;
+  display:none;
+}
+.restored-toast button{
+  background:transparent;
+  border:none;
+  color:#055160;
+  font-weight:700;
+  margin-left:8px;
+  text-decoration:underline;
+  cursor:pointer;
+  padding:0;
+}
+.btn-danger-clear{
+  background:#fff;
+  border:1px solid #dc3545;
+  color:#dc3545;
+  font-weight:600;
+  border-radius:12px;
+  padding:10px 14px;
+  width:100%;
+  margin-top:14px;
+  cursor:pointer;
+}
+.btn-danger-clear:hover{background:#fff5f5}
+
+.top-utility-bar{
+  max-width:1180px;
+  margin:0 auto;
+  padding:8px 12px 0;
+}
+.upload-card{
+  background:#fff;
+  border:1px dashed var(--verde);
+  border-radius:10px;
+  padding:8px 12px;
+  margin-top:8px;
+  text-align:center;
+}
+.upload-link{
+  display:inline-block;
+  color:var(--verde-oscuro);
+  font-weight:600;
+  font-size:13px;
+  cursor:pointer;
+  margin:0;
+  padding:2px 4px;
+}
+.upload-link:hover{text-decoration:underline}
+.upload-link::before{content:"📄 "}
+.restored-toast{margin:8px 0 0}
+.missing-banner{margin:8px 12px 0}
+</style>
+</head>
+
+<body>
+
+<div id="loading" class="loading-modal">
+  <div class="loader-card">
+    <img class="loading-logo" src="https://soluasistencia.com/wp-content/uploads/2024/11/logo_solu.png" alt="Logo Soluasistencia">
+    <div class="spinner"></div>
+    <h5 class="fw-bold mb-1">Preparando formulario</h5>
+    <p class="text-muted mb-0">Cargando la plantilla y dejando todo listo para diligenciar.</p>
+  </div>
+</div>
+
+<header class="app-header">
+  <div class="brand-wrap">
+    <div class="brand-left">
+      <img class="brand-logo" src="https://soluasistencia.com/wp-content/uploads/2024/11/logo_solu.png" alt="Logo Soluasistencia">
+      <div class="brand-text">
+        <h1>Formulario móvil de siniestros</h1>
+        <small>Soluasistencia · Declaración de responsabilidad civil servicio público</small>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button type="button" class="header-action-btn" id="btnUploadHeader" title="Cargar PDF generado anteriormente para editarlo">
+        <span>📄</span><span class="btn-label">Cargar PDF</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="top-utility-bar">
+  <div class="restored-toast" id="restoredToast">
+    Se restauraron datos de una sesión anterior.
+    <button type="button" id="btnDismissRestored">OK</button>
+    <button type="button" id="btnClearRestored">Empezar nuevo</button>
+  </div>
+</div>
+
+<input type="file" id="pdfUploadInput" accept="application/pdf,.pdf" hidden>
+
+<main class="main-wrap">
+
+  <section class="card-mobile">
+    <div class="step-indicator" id="stepIndicator"></div>
+
+    <div class="step-body">
+
+      <!-- PASO 1 -->
+      <div class="step" data-step="0">
+        <div class="step-title">1. Datos del accidente</div>
+        <div class="step-help">Diligencia los datos principales. La app los ubicará automáticamente en el PDF.</div>
+
+        <div class="row g-2">
+          <div class="col-12">
+            <label>Lugar del accidente</label>
+            <input class="form-control pdf-field" data-key="lugarAccidente" placeholder="Ej: Av. Oriental con San Juan">
+          </div>
+          <div class="col-6">
+            <label>Ciudad</label>
+            <input class="form-control pdf-field" data-key="ciudad" placeholder="Medellín">
+          </div>
+          <div class="col-6">
+            <label>Municipio</label>
+            <input class="form-control pdf-field" data-key="municipio" placeholder="Medellín">
+          </div>
+          <div class="col-6">
+            <label>Fecha siniestro</label>
+            <input type="date" class="form-control pdf-field" data-key="fechaSiniestro">
+          </div>
+          <div class="col-6">
+            <label>Fecha reporte</label>
+            <input type="date" class="form-control pdf-field" data-key="fechaReporte">
+          </div>
+          <div class="col-12">
+            <label>N° póliza</label>
+            <input class="form-control pdf-field" data-key="poliza" placeholder="Número de póliza">
+          </div>
+        </div>
+      </div>
+
+      <!-- PASO 2 -->
+      <div class="step" data-step="1" style="display:none">
+        <div class="step-title">2. Asegurado y vehículo</div>
+        <div class="step-help">Información del tomador, asegurado y datos del vehículo.</div>
+
+        <div class="row g-2">
+          <div class="col-12">
+            <label>Nombre del tomador</label>
+            <input class="form-control pdf-field" data-key="tomador">
+          </div>
+          <div class="col-12">
+            <label>C.C. o NIT tomador</label>
+            <input class="form-control pdf-field" data-key="nitTomador">
+          </div>
+          <div class="col-12">
+            <label>Nombre del asegurado</label>
+            <input class="form-control pdf-field" data-key="asegurado">
+          </div>
+          <div class="col-12">
+            <label>C.C. o NIT asegurado</label>
+            <input class="form-control pdf-field" data-key="nitAsegurado">
+          </div>
+          <div class="col-12">
+            <label>Dirección del asegurado</label>
+            <input class="form-control pdf-field" data-key="direccionAsegurado">
+          </div>
+          <div class="col-6">
+            <label>Ciudad</label>
+            <input class="form-control pdf-field" data-key="ciudadAsegurado">
+          </div>
+          <div class="col-6">
+            <label>Teléfono 1</label>
+            <input class="form-control pdf-field" data-key="telefono1">
+          </div>
+          <div class="col-12">
+            <label>Correo electrónico</label>
+            <input type="email" class="form-control pdf-field" data-key="correo">
+          </div>
+          <div class="col-6">
+            <label>Teléfono 2</label>
+            <input class="form-control pdf-field" data-key="telefono2">
+          </div>
+          <div class="col-6">
+            <label>Celular</label>
+            <input class="form-control pdf-field" data-key="celular">
+          </div>
+          <div class="col-6">
+            <label>Marca</label>
+            <input class="form-control pdf-field" data-key="marca">
+          </div>
+          <div class="col-6">
+            <label>Tipo</label>
+            <input class="form-control pdf-field" data-key="tipo">
+          </div>
+          <div class="col-6">
+            <label>Placa</label>
+            <input class="form-control pdf-field text-uppercase" data-key="placa">
+          </div>
+          <div class="col-6">
+            <label>Modelo</label>
+            <input class="form-control pdf-field" data-key="modelo">
+          </div>
+          <div class="col-6">
+            <label>Capacidad</label>
+            <input class="form-control pdf-field" data-key="capacidad">
+          </div>
+          <div class="col-6">
+            <label>Color</label>
+            <input class="form-control pdf-field" data-key="color">
+          </div>
+        </div>
+      </div>
+
+      <!-- PASO 3 -->
+      <div class="step" data-step="2" style="display:none">
+        <div class="step-title">3. Conductor y relato</div>
+        <div class="step-help">El relato se parte automáticamente en varias líneas dentro del formulario.</div>
+
+        <div class="row g-2">
+          <div class="col-12">
+            <label>Nombre del conductor y teléfono</label>
+            <input class="form-control pdf-field" data-key="conductorTelefono">
+          </div>
+          <div class="col-6">
+            <label>Tipo de documento conductor</label>
+            <select class="form-select pdf-field" data-key="conductorTipoDoc">
+              <option value="">Seleccione</option>
+              <option>CC</option>
+              <option>CE</option>
+              <option>TI</option>
+              <option>OTRO</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label>N° documento conductor</label>
+            <input class="form-control pdf-field" data-key="documentoConductor">
+          </div>
+          <div class="col-12">
+            <label>Yo (nombre del declarante)</label>
+            <input class="form-control pdf-field" data-key="yoNombre" placeholder="Nombre completo">
+          </div>
+          <div class="col-12">
+            <label>En mi calidad de</label>
+            <select class="form-select pdf-field" data-key="calidad">
+              <option value="">Seleccione</option>
+              <option>CONDUCTOR</option>
+              <option>PROPIETARIO</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label>Día del hecho</label>
+            <input class="form-control pdf-field" data-key="diaHecho" placeholder="Ej: 23">
+          </div>
+          <div class="col-6">
+            <label>Mes</label>
+            <input class="form-control pdf-field" data-key="mesHecho" placeholder="Ej: abril">
+          </div>
+          <div class="col-6">
+            <label>Año</label>
+            <input class="form-control pdf-field" data-key="anioHecho" placeholder="Ej: 2026">
+          </div>
+          <div class="col-6">
+            <label>Hora aproximada</label>
+            <input class="form-control pdf-field" data-key="horaHecho" placeholder="Ej: 08:30">
+          </div>
+          <div class="col-12">
+            <label>Dirección del hecho</label>
+            <input class="form-control pdf-field" data-key="direccionHecho">
+          </div>
+          <div class="col-12">
+            <label>Relato de los hechos</label>
+            <textarea class="form-control pdf-field" data-key="relato" placeholder="Describe de manera clara y detallada lo ocurrido..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- PASO 4 -->
+      <div class="step" data-step="3" style="display:none">
+        <div class="step-title">4. Responsabilidad y observaciones</div>
+        <div class="step-help">Selecciona las opciones principales. Las respuestas se marcarán en la plantilla.</div>
+
+        <div class="row g-2">
+          <div class="col-6">
+            <label>Personas lesionadas</label>
+            <select class="form-select pdf-field" data-key="lesionados">
+              <option value="">Seleccione</option>
+              <option>SI</option>
+              <option>NO</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label>¿Cuántas?</label>
+            <input class="form-control pdf-field" data-key="cuantosLesionados">
+          </div>
+          <div class="col-6">
+            <label>Personas fallecidas</label>
+            <select class="form-select pdf-field" data-key="fallecidos">
+              <option value="">Seleccione</option>
+              <option>SI</option>
+              <option>NO</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label>¿Cuántas?</label>
+            <input class="form-control pdf-field" data-key="cuantosFallecidos">
+          </div>
+          <div class="col-12">
+            <label>El accidente se presentó por</label>
+            <select class="form-select pdf-field" data-key="causa">
+              <option value="">Seleccione</option>
+              <option value="A">A. Imprudencia de un tercero</option>
+              <option value="B">B. Fallas mecánicas</option>
+              <option value="C">C. Mal estado de la vía</option>
+              <option value="D">D. Otra</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label>Especifique (solo si seleccionó "Otra")</label>
+            <input class="form-control pdf-field" data-key="causaDOtra" placeholder="Describe la otra causa">
+          </div>
+          <div class="col-6">
+            <label>Grado responsabilidad 1 a 10</label>
+            <input type="number" min="1" max="10" class="form-control pdf-field" data-key="gradoResponsabilidad">
+          </div>
+          <div class="col-6">
+            <label>Responsabilidad compartida</label>
+            <select class="form-select pdf-field" data-key="responsabilidadCompartida">
+              <option value="">Seleccione</option>
+              <option>SI</option>
+              <option>NO</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label>¿Por qué?</label>
+            <input class="form-control pdf-field" data-key="porqueResponsabilidad">
+          </div>
+          <div class="col-6">
+            <label>Informe de autoridades</label>
+            <select class="form-select pdf-field" data-key="informeAutoridad">
+              <option value="">Seleccione</option>
+              <option>SI</option>
+              <option>NO</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label>Motivos (si no hubo informe)</label>
+            <input class="form-control pdf-field" data-key="motivosSinInforme" placeholder="Indique los motivos">
+          </div>
+          <div class="col-12">
+            <label>Daños del vehículo</label>
+            <textarea class="form-control pdf-field" data-key="danosVehiculo"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- PASO 5 -->
+      <div class="step" data-step="4" style="display:none">
+        <div class="step-title">5. Terceros afectados</div>
+        <div class="step-help">Esta sección llena los dos bloques de vehículos terceros en la página 2.</div>
+
+        <div class="accordion" id="tercerosAccordion">
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#tercero1">
+                Vehículo tercero 1
+              </button>
+            </h2>
+            <div id="tercero1" class="accordion-collapse collapse show" data-bs-parent="#tercerosAccordion">
+              <div class="accordion-body">
+                <div class="row g-2">
+                  <div class="col-6"><label>Marca</label><input class="form-control pdf-field" data-key="t1Marca"></div>
+                  <div class="col-6"><label>Modelo</label><input class="form-control pdf-field" data-key="t1Modelo"></div>
+                  <div class="col-6"><label>Color</label><input class="form-control pdf-field" data-key="t1Color"></div>
+                  <div class="col-6"><label>Placas</label><input class="form-control pdf-field text-uppercase" data-key="t1Placas"></div>
+                  <div class="col-6"><label>Servicio</label><input class="form-control pdf-field" data-key="t1Servicio"></div>
+                  <div class="col-6"><label>Asegurado en</label><input class="form-control pdf-field" data-key="t1Asegurado"></div>
+                  <div class="col-12"><label>Conductor</label><input class="form-control pdf-field" data-key="t1Conductor"></div>
+                  <div class="col-6"><label>Licencia</label><input class="form-control pdf-field" data-key="t1Licencia"></div>
+                  <div class="col-6"><label>C.C.</label><input class="form-control pdf-field" data-key="t1Cedula"></div>
+                  <div class="col-12"><label>Propietario</label><input class="form-control pdf-field" data-key="t1Propietario"></div>
+                  <div class="col-12"><label>Dirección</label><input class="form-control pdf-field" data-key="t1Direccion"></div>
+                  <div class="col-6"><label>Ciudad</label><input class="form-control pdf-field" data-key="t1Ciudad"></div>
+                  <div class="col-6"><label>Teléfono</label><input class="form-control pdf-field" data-key="t1Telefono"></div>
+                  <div class="col-12"><label>Actualmente se encuentra en</label><input class="form-control pdf-field" data-key="t1Ubicacion"></div>
+                  <div class="col-12"><label>Daños</label><textarea class="form-control pdf-field" data-key="t1Danos"></textarea></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#tercero2">
+                Vehículo tercero 2
+              </button>
+            </h2>
+            <div id="tercero2" class="accordion-collapse collapse" data-bs-parent="#tercerosAccordion">
+              <div class="accordion-body">
+                <div class="row g-2">
+                  <div class="col-6"><label>Marca</label><input class="form-control pdf-field" data-key="t2Marca"></div>
+                  <div class="col-6"><label>Modelo</label><input class="form-control pdf-field" data-key="t2Modelo"></div>
+                  <div class="col-6"><label>Color</label><input class="form-control pdf-field" data-key="t2Color"></div>
+                  <div class="col-6"><label>Placas</label><input class="form-control pdf-field text-uppercase" data-key="t2Placas"></div>
+                  <div class="col-6"><label>Servicio</label><input class="form-control pdf-field" data-key="t2Servicio"></div>
+                  <div class="col-6"><label>Asegurado en</label><input class="form-control pdf-field" data-key="t2Asegurado"></div>
+                  <div class="col-12"><label>Conductor</label><input class="form-control pdf-field" data-key="t2Conductor"></div>
+                  <div class="col-6"><label>Licencia</label><input class="form-control pdf-field" data-key="t2Licencia"></div>
+                  <div class="col-6"><label>C.C.</label><input class="form-control pdf-field" data-key="t2Cedula"></div>
+                  <div class="col-12"><label>Propietario</label><input class="form-control pdf-field" data-key="t2Propietario"></div>
+                  <div class="col-12"><label>Dirección</label><input class="form-control pdf-field" data-key="t2Direccion"></div>
+                  <div class="col-6"><label>Ciudad</label><input class="form-control pdf-field" data-key="t2Ciudad"></div>
+                  <div class="col-6"><label>Teléfono</label><input class="form-control pdf-field" data-key="t2Telefono"></div>
+                  <div class="col-12"><label>Actualmente se encuentra en</label><input class="form-control pdf-field" data-key="t2Ubicacion"></div>
+                  <div class="col-12"><label>Daños</label><textarea class="form-control pdf-field" data-key="t2Danos"></textarea></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- PASO 6 -->
+      <div class="step" data-step="5" style="display:none">
+        <div class="step-title">6. Lesionados y fallecidos</div>
+        <div class="step-help">Campos para la página 2. Puedes dejar en blanco los que no apliquen.</div>
+
+        <div class="row g-2">
+          <div class="col-12"><h6 class="fw-bold mt-1">Lesionado 1</h6></div>
+          <div class="col-12"><label>Nombre</label><input class="form-control pdf-field" data-key="l1Nombre"></div>
+          <div class="col-6"><label>C.C.</label><input class="form-control pdf-field" data-key="l1Cedula"></div>
+          <div class="col-6"><label>Teléfono</label><input class="form-control pdf-field" data-key="l1Telefono"></div>
+          <div class="col-12"><label>Dirección</label><input class="form-control pdf-field" data-key="l1Direccion"></div>
+          <div class="col-6"><label>Gravedad</label>
+            <select class="form-select pdf-field" data-key="l1Gravedad">
+              <option value="">Seleccione</option>
+              <option>LEVE</option>
+              <option>MODERADA</option>
+              <option>GRAVE</option>
+            </select>
+          </div>
+          <div class="col-6"><label>Clínica u hospital</label><input class="form-control pdf-field" data-key="l1Hospital"></div>
+
+          <div class="col-12"><h6 class="fw-bold mt-3">Lesionado 2</h6></div>
+          <div class="col-12"><label>Nombre</label><input class="form-control pdf-field" data-key="l2Nombre"></div>
+          <div class="col-6"><label>C.C.</label><input class="form-control pdf-field" data-key="l2Cedula"></div>
+          <div class="col-6"><label>Teléfono</label><input class="form-control pdf-field" data-key="l2Telefono"></div>
+          <div class="col-12"><label>Dirección</label><input class="form-control pdf-field" data-key="l2Direccion"></div>
+          <div class="col-6"><label>Gravedad</label>
+            <select class="form-select pdf-field" data-key="l2Gravedad">
+              <option value="">Seleccione</option>
+              <option>LEVE</option>
+              <option>MODERADA</option>
+              <option>GRAVE</option>
+            </select>
+          </div>
+          <div class="col-6"><label>Clínica u hospital</label><input class="form-control pdf-field" data-key="l2Hospital"></div>
+
+          <div class="col-12"><h6 class="fw-bold mt-3">Lesionado 3</h6></div>
+          <div class="col-12"><label>Nombre</label><input class="form-control pdf-field" data-key="l3Nombre"></div>
+          <div class="col-6"><label>C.C.</label><input class="form-control pdf-field" data-key="l3Cedula"></div>
+          <div class="col-6"><label>Teléfono</label><input class="form-control pdf-field" data-key="l3Telefono"></div>
+          <div class="col-12"><label>Dirección</label><input class="form-control pdf-field" data-key="l3Direccion"></div>
+          <div class="col-6"><label>Gravedad</label>
+            <select class="form-select pdf-field" data-key="l3Gravedad">
+              <option value="">Seleccione</option>
+              <option>LEVE</option>
+              <option>MODERADA</option>
+              <option>GRAVE</option>
+            </select>
+          </div>
+          <div class="col-6"><label>Clínica u hospital</label><input class="form-control pdf-field" data-key="l3Hospital"></div>
+
+          <div class="col-12"><h6 class="fw-bold mt-3">Fallecido 1</h6></div>
+          <div class="col-12"><label>Nombre</label><input class="form-control pdf-field" data-key="f1Nombre"></div>
+          <div class="col-6"><label>C.C.</label><input class="form-control pdf-field" data-key="f1Cedula"></div>
+          <div class="col-6"><label>Teléfono</label><input class="form-control pdf-field" data-key="f1Telefono"></div>
+          <div class="col-12"><label>Dirección</label><input class="form-control pdf-field" data-key="f1Direccion"></div>
+          <div class="col-6"><label>Género</label><input class="form-control pdf-field" data-key="f1Genero"></div>
+          <div class="col-6"><label>Edad</label><input class="form-control pdf-field" data-key="f1Edad"></div>
+          <div class="col-12"><label>Lugar donde se declara el fallecimiento</label><input class="form-control pdf-field" data-key="f1Lugar"></div>
+
+          <div class="col-12"><h6 class="fw-bold mt-3">Fallecido 2</h6></div>
+          <div class="col-12"><label>Nombre</label><input class="form-control pdf-field" data-key="f2Nombre"></div>
+          <div class="col-6"><label>C.C.</label><input class="form-control pdf-field" data-key="f2Cedula"></div>
+          <div class="col-6"><label>Teléfono</label><input class="form-control pdf-field" data-key="f2Telefono"></div>
+          <div class="col-12"><label>Dirección</label><input class="form-control pdf-field" data-key="f2Direccion"></div>
+          <div class="col-6"><label>Género</label><input class="form-control pdf-field" data-key="f2Genero"></div>
+          <div class="col-6"><label>Edad</label><input class="form-control pdf-field" data-key="f2Edad"></div>
+          <div class="col-12"><label>Lugar donde se declara el fallecimiento</label><input class="form-control pdf-field" data-key="f2Lugar"></div>
+
+          <div class="col-12"><h6 class="fw-bold mt-3">Fallecido 3</h6></div>
+          <div class="col-12"><label>Nombre</label><input class="form-control pdf-field" data-key="f3Nombre"></div>
+          <div class="col-6"><label>C.C.</label><input class="form-control pdf-field" data-key="f3Cedula"></div>
+          <div class="col-6"><label>Teléfono</label><input class="form-control pdf-field" data-key="f3Telefono"></div>
+          <div class="col-12"><label>Dirección</label><input class="form-control pdf-field" data-key="f3Direccion"></div>
+          <div class="col-6"><label>Género</label><input class="form-control pdf-field" data-key="f3Genero"></div>
+          <div class="col-6"><label>Edad</label><input class="form-control pdf-field" data-key="f3Edad"></div>
+          <div class="col-12"><label>Lugar donde se declara el fallecimiento</label><input class="form-control pdf-field" data-key="f3Lugar"></div>
+        </div>
+      </div>
+
+      <!-- PASO 7 -->
+      <div class="step" data-step="6" style="display:none">
+        <div class="step-title">7. Firma y guardar</div>
+        <div class="step-help">Datos del abogado (opcional), documento del declarante y firma.</div>
+
+        <div class="row g-2 mb-3">
+          <div class="col-12">
+            <label>Nombre del abogado que presta el servicio</label>
+            <input class="form-control pdf-field" data-key="abogadoNombre" placeholder="Opcional">
+          </div>
+          <div class="col-12">
+            <label>Firma de abogados que lo vincula</label>
+            <input class="form-control pdf-field" data-key="abogadoFirma" placeholder="Opcional">
+          </div>
+          <div class="col-6">
+            <label>Tipo doc. declarante</label>
+            <select class="form-select pdf-field" data-key="declaranteTipoDoc">
+              <option value="">Seleccione</option>
+              <option>CC</option>
+              <option>CE</option>
+              <option>TI</option>
+              <option>OTRO</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label>N° documento declarante</label>
+            <input class="form-control pdf-field" data-key="declaranteNumDoc">
+          </div>
+        </div>
+
+        <div class="help-box mb-3">
+          La firma se ubicará automáticamente en el campo superior izquierdo de la primera página.
+        </div>
+
+        <label>Firma del declarante</label>
+        <div class="signature-box mb-2">
+          <canvas id="signatureCanvas"></canvas>
+        </div>
+
+        <div class="quick-grid mb-3">
+          <button class="btn-danger-soft" id="btnClearSignature" type="button">Limpiar firma</button>
+          <button class="btn-soft" id="btnShowPreview" type="button">Ver vista previa</button>
+        </div>
+
+        <div class="d-flex gap-2 flex-wrap">
+          <span class="badge-ok" id="statusTemplate">Cargando plantilla...</span>
+          <span class="badge-warn" id="statusFields">Campos: 0</span>
+        </div>
+
+        <button type="button" class="btn-danger-clear" id="btnClearForm">
+          Limpiar formulario y empezar de nuevo
+        </button>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="card-mobile viewer-card" id="viewerCard">
+    <div class="viewer-title-mobile" id="viewerToggle">
+      <div>
+        <strong>Vista previa del PDF</strong>
+        <span class="d-block">Toca para abrir / cerrar</span>
+      </div>
+      <span class="viewer-toggle-icon" aria-hidden="true"></span>
+    </div>
+    <div class="viewer-toolbar">
+      <button class="btn btn-light border" id="prevPage" type="button">◀</button>
+      <strong id="pageInfo">Página -</strong>
+      <button class="btn btn-light border" id="nextPage" type="button">▶</button>
+      <button class="btn btn-light border" id="zoomOut" type="button">−</button>
+      <button class="btn btn-light border" id="zoomIn" type="button">+</button>
+    </div>
+    <div class="viewer">
+      <div class="stage" id="stage">
+        <div id="pdfPlaceholder" class="pdf-placeholder">
+          <div class="mini-spinner"></div>
+          <strong>Cargando vista del PDF...</strong>
+          <span>La aplicación ya se puede diligenciar mientras se prepara la plantilla.</span>
+        </div>
+        <canvas id="pdfCanvas"></canvas>
+        <canvas id="drawCanvas"></canvas>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div class="missing-banner" id="missingBanner" style="display:none">
+  <strong>Faltan campos obligatorios</strong>
+  <span id="missingDetail"></span>
+</div>
+
+<div class="bottom-bar">
+  <div class="bottom-actions">
+    <button class="btn-soft" id="btnBack" type="button">Atrás</button>
+    <button class="btn-main" id="btnNext" type="button">Siguiente</button>
+  </div>
+</div>
+
+<div class="toast-app" id="toastApp">
+  <div class="box" id="toastText"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js"></script>
+<script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+/* =============================
+   CONFIGURACIÓN GENERAL
+============================= */
+
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+ "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
+
+const TEMPLATE_URL = "plantilla.pdf";
+
+const STEPS = [
+  "Accidente",
+  "Vehículo",
+  "Relato",
+  "Responsabilidad",
+  "Terceros",
+  "Lesionados",
+  "Firma"
+];
+
+const pdfCanvas = document.getElementById("pdfCanvas");
+const drawCanvas = document.getElementById("drawCanvas");
+const pdfCtx = pdfCanvas.getContext("2d");
+const overlayCtx = drawCanvas.getContext("2d");
+
+const signatureCanvas = document.getElementById("signatureCanvas");
+const sigCtx = signatureCanvas.getContext("2d");
+
+let pdfBytes = null;
+let pdfDoc = null;
+let pageCount = 0;
+let currentPage = 1;
+let currentStep = 0;
+let zoom = window.innerWidth < 900 ? 0.78 : 1.25;
+let renderRatio = 1;
+let previewRendered = false;
+let renderJob = 0;
+let fields = {};
+let signatureHasData = false;
+let sigDrawing = false;
+
+/*
+  Coordenadas en porcentaje sobre cada página.
+  xPct y yPct se usan para vista previa en canvas.
+  Al guardar, se convierten a coordenadas reales del PDF.
+*/
+const PDF_PAGE_W = 594.96;
+const PDF_PAGE_H = 842.52;
+
+/*
+  Coordenadas calibradas en puntos PDF (A4 594.96 x 842.52).
+  x y y se miden desde la esquina superior izquierda de la página.
+  Esto evita que el zoom o el tamaño del canvas desplacen los datos.
+*/
+const FIELD_MAP = {
+  // Página 1 - Encabezado (abogado y declarante)
+  abogadoNombre:{page:1,x:18,y:113,size:8,maxWidth:280,minSize:5.8},
+  abogadoFirma:{page:1,x:305,y:113,size:8,maxWidth:280,minSize:5.8},
+  declaranteTipoDoc:{page:1,y:148,size:8,marks:{
+    CC:{x:322,y:148},
+    CE:{x:346,y:148},
+    TI:{x:370,y:148},
+    OTRO:{x:407,y:148}
+  }},
+  declaranteNumDoc:{page:1,x:445,y:148,size:8,maxWidth:135,minSize:5.5},
+
+  // Página 1 - Encabezado y tabla principal
+  lugarAccidente:{page:1,x:17,y:188,size:7.5,maxWidth:90,lines:2,lineHeight:8,minSize:5.2},
+  ciudad:{page:1,x:113,y:191,size:7.5,maxWidth:62,minSize:5.8},
+  municipio:{page:1,x:180,y:191,size:7.5,maxWidth:78,lines:2,lineHeight:8,minSize:5.2},
+  fechaSiniestro:{page:1,x:282,y:191,size:7.5,maxWidth:90,type:"date"},
+  fechaReporte:{page:1,x:394,y:191,size:7.5,maxWidth:88,type:"date"},
+  poliza:{page:1,x:491,y:191,size:7.5,maxWidth:84,minSize:5.8},
+
+  tomador:{page:1,x:102,y:213,size:7.5,maxWidth:380,minSize:5.8},
+  nitTomador:{page:1,x:525,y:213,size:7.5,maxWidth:55,minSize:5.5},
+  asegurado:{page:1,x:110,y:236,size:7.5,maxWidth:370,minSize:5.8},
+  nitAsegurado:{page:1,x:525,y:236,size:7.5,maxWidth:55,minSize:5.5},
+  direccionAsegurado:{page:1,x:116,y:260,size:7.5,maxWidth:265,minSize:5.5},
+  ciudadAsegurado:{page:1,x:420,y:260,size:7.5,maxWidth:70},
+  telefono1:{page:1,x:532,y:260,size:7.5,maxWidth:48},
+  correo:{page:1,x:180,y:284,size:7.2,maxWidth:200,minSize:5.3},
+  telefono2:{page:1,x:430,y:284,size:7.5,maxWidth:58},
+  celular:{page:1,x:522,y:284,size:7.5,maxWidth:58},
+
+  marca:{page:1,x:17,y:320,size:7.5,maxWidth:90,minSize:5.5},
+  tipo:{page:1,x:113,y:320,size:7.5,maxWidth:62,minSize:5.5},
+  placa:{page:1,x:180,y:320,size:7.5,maxWidth:78,minSize:5.5},
+  modelo:{page:1,x:263,y:320,size:7.5,maxWidth:112,minSize:5.5},
+  capacidad:{page:1,x:382,y:320,size:7.5,maxWidth:100,minSize:5.5},
+  color:{page:1,x:491,y:320,size:7.5,maxWidth:86,minSize:5.5},
+
+  conductorTelefono:{page:1,x:150,y:346,size:7.3,maxWidth:225,minSize:5.2},
+  conductorTipoDoc:{page:1,y:346,size:7.3,marks:{
+    CC:{x:402,y:346},
+    CE:{x:425,y:346},
+    TI:{x:448,y:346},
+    OTRO:{x:475,y:346}
+  }},
+  documentoConductor:{page:1,x:488,y:346,size:7.3,maxWidth:85,minSize:5.2},
+
+  // Página 1 - Relato
+  yoNombre:{page:1,x:38,y:420,size:8,maxWidth:155,minSize:5.5},
+  calidad:{page:1,y:420,size:8,marks:{
+    CONDUCTOR:{x:245,y:420},
+    PROPIETARIO:{x:292,y:420}
+  }},
+  diaHecho:{page:1,x:51,y:450,size:8,maxWidth:28},
+  mesHecho:{page:1,x:118,y:450,size:8,maxWidth:68},
+  anioHecho:{page:1,x:224,y:450,size:8,maxWidth:38},
+  horaHecho:{page:1,x:414,y:450,size:8,maxWidth:32},
+  direccionHecho:{page:1,x:203,y:461,size:8,maxWidth:130,minSize:5.5},
+  relato:{page:1,x:20,y:475,size:8,maxWidth:555,lineHeight:11,lines:5},
+
+  // Página 1 - Marcas y responsabilidad
+  lesionados:{page:1,x:128,y:540,size:8,maxWidth:20,mark:true,noX:160},
+  cuantosLesionados:{page:1,x:225,y:540,size:8,maxWidth:38},
+  fallecidos:{page:1,x:372,y:540,size:8,maxWidth:20,mark:true,noX:404},
+  cuantosFallecidos:{page:1,x:470,y:540,size:8,maxWidth:38},
+  causa:{page:1,x:166,y:570,size:8,maxWidth:20,cause:true},
+  causaDOtra:{page:1,x:160,y:585,size:7.5,maxWidth:415,minSize:5.3},
+  gradoResponsabilidad:{page:1,x:187,y:612,size:8,maxWidth:28},
+  responsabilidadCompartida:{page:1,x:33,y:643,size:8,maxWidth:20,mark:true,noX:70},
+  porqueResponsabilidad:{page:1,x:144,y:643,size:7.5,maxWidth:430,minSize:5.2},
+  informeAutoridad:{page:1,x:33,y:674,size:8,maxWidth:20,mark:true,noX:70},
+  motivosSinInforme:{page:1,x:295,y:674,size:7.5,maxWidth:285,minSize:5.2},
+  danosVehiculo:{page:1,x:20,y:707,size:8,maxWidth:530,lineHeight:11,lines:4},
+
+  // Página 2 - Vehículo tercero 1
+  t1Marca:{page:2,x:17,y:130,size:7,maxWidth:90},
+  t1Modelo:{page:2,x:113,y:130,size:7,maxWidth:65},
+  t1Color:{page:2,x:181,y:130,size:7,maxWidth:80},
+  t1Placas:{page:2,x:263,y:130,size:7,maxWidth:110},
+  t1Servicio:{page:2,x:382,y:130,size:7,maxWidth:100},
+  t1Asegurado:{page:2,x:491,y:130,size:7,maxWidth:86},
+  t1Conductor:{page:2,x:70,y:158,size:7,maxWidth:190},
+  t1Licencia:{page:2,x:338,y:158,size:7,maxWidth:50},
+  t1Cedula:{page:2,x:418,y:158,size:7,maxWidth:70},
+  t1Propietario:{page:2,x:543,y:158,size:7,maxWidth:35,minSize:5.3},
+  t1Direccion:{page:2,x:17,y:198,size:7,maxWidth:160},
+  t1Ciudad:{page:2,x:182,y:198,size:7,maxWidth:78},
+  t1Telefono:{page:2,x:267,y:198,size:7,maxWidth:110},
+  t1Ubicacion:{page:2,x:383,y:198,size:7,maxWidth:190},
+  t1Danos:{page:2,x:20,y:218,size:6.8,maxWidth:420,lineHeight:8,lines:2,minSize:5.3},
+
+  // Página 2 - Vehículo tercero 2
+  t2Marca:{page:2,x:17,y:283,size:7,maxWidth:90},
+  t2Modelo:{page:2,x:113,y:283,size:7,maxWidth:65},
+  t2Color:{page:2,x:181,y:283,size:7,maxWidth:80},
+  t2Placas:{page:2,x:263,y:283,size:7,maxWidth:110},
+  t2Servicio:{page:2,x:382,y:283,size:7,maxWidth:100},
+  t2Asegurado:{page:2,x:491,y:283,size:7,maxWidth:86},
+  t2Conductor:{page:2,x:70,y:311,size:7,maxWidth:190},
+  t2Licencia:{page:2,x:338,y:311,size:7,maxWidth:50},
+  t2Cedula:{page:2,x:418,y:311,size:7,maxWidth:70},
+  t2Propietario:{page:2,x:543,y:311,size:7,maxWidth:35,minSize:5.3},
+  t2Direccion:{page:2,x:17,y:351,size:7,maxWidth:160},
+  t2Ciudad:{page:2,x:182,y:351,size:7,maxWidth:78},
+  t2Telefono:{page:2,x:267,y:351,size:7,maxWidth:110},
+  t2Ubicacion:{page:2,x:383,y:351,size:7,maxWidth:190},
+  t2Danos:{page:2,x:20,y:371,size:6.8,maxWidth:420,lineHeight:8,lines:2,minSize:5.3},
+
+  // Página 2 - Lesionado 1
+  l1Nombre:{page:2,x:100,y:450,size:7,maxWidth:84},
+  l1Cedula:{page:2,x:215,y:450,size:7,maxWidth:108},
+  l1Direccion:{page:2,x:370,y:450,size:7,maxWidth:92},
+  l1Telefono:{page:2,x:502,y:450,size:7,maxWidth:75},
+  l1Gravedad:{page:2,y:472,size:7,marks:{
+    LEVE:{x:223,y:472},
+    MODERADA:{x:263,y:472},
+    GRAVE:{x:303,y:472}
+  }},
+  l1Hospital:{page:2,x:335,y:483,size:6.5,maxWidth:235,minSize:5.3},
+
+  // Página 2 - Lesionado 2
+  l2Nombre:{page:2,x:100,y:494,size:7,maxWidth:84},
+  l2Cedula:{page:2,x:215,y:494,size:7,maxWidth:108},
+  l2Direccion:{page:2,x:370,y:494,size:7,maxWidth:92},
+  l2Telefono:{page:2,x:502,y:494,size:7,maxWidth:75},
+  l2Gravedad:{page:2,y:516,size:7,marks:{
+    LEVE:{x:223,y:516},
+    MODERADA:{x:263,y:516},
+    GRAVE:{x:303,y:516}
+  }},
+  l2Hospital:{page:2,x:335,y:527,size:6.5,maxWidth:235,minSize:5.3},
+
+  // Página 2 - Lesionado 3
+  l3Nombre:{page:2,x:100,y:538,size:7,maxWidth:84},
+  l3Cedula:{page:2,x:215,y:538,size:7,maxWidth:108},
+  l3Direccion:{page:2,x:370,y:538,size:7,maxWidth:92},
+  l3Telefono:{page:2,x:502,y:538,size:7,maxWidth:75},
+  l3Gravedad:{page:2,y:560,size:7,marks:{
+    LEVE:{x:223,y:560},
+    MODERADA:{x:263,y:560},
+    GRAVE:{x:303,y:560}
+  }},
+  l3Hospital:{page:2,x:335,y:571,size:6.5,maxWidth:235,minSize:5.3},
+
+  // Página 2 - Fallecido 1
+  f1Nombre:{page:2,x:98,y:632,size:7,maxWidth:86},
+  f1Cedula:{page:2,x:215,y:632,size:7,maxWidth:108},
+  f1Direccion:{page:2,x:370,y:632,size:7,maxWidth:92},
+  f1Telefono:{page:2,x:502,y:632,size:7,maxWidth:75},
+  f1Lugar:{page:2,x:178,y:653,size:7,maxWidth:148,minSize:5.2},
+  f1Genero:{page:2,x:360,y:653,size:7,maxWidth:100},
+  f1Edad:{page:2,x:486,y:653,size:7,maxWidth:70},
+
+  // Página 2 - Fallecido 2
+  f2Nombre:{page:2,x:98,y:676,size:7,maxWidth:86},
+  f2Cedula:{page:2,x:215,y:676,size:7,maxWidth:108},
+  f2Direccion:{page:2,x:370,y:676,size:7,maxWidth:92},
+  f2Telefono:{page:2,x:502,y:676,size:7,maxWidth:75},
+  f2Lugar:{page:2,x:178,y:697,size:7,maxWidth:148,minSize:5.2},
+  f2Genero:{page:2,x:360,y:697,size:7,maxWidth:100},
+  f2Edad:{page:2,x:486,y:697,size:7,maxWidth:70},
+
+  // Página 2 - Fallecido 3
+  f3Nombre:{page:2,x:98,y:720,size:7,maxWidth:86},
+  f3Cedula:{page:2,x:215,y:720,size:7,maxWidth:108},
+  f3Direccion:{page:2,x:370,y:720,size:7,maxWidth:92},
+  f3Telefono:{page:2,x:502,y:720,size:7,maxWidth:75},
+  f3Lugar:{page:2,x:178,y:741,size:7,maxWidth:148,minSize:5.2},
+  f3Genero:{page:2,x:360,y:741,size:7,maxWidth:100},
+  f3Edad:{page:2,x:486,y:741,size:7,maxWidth:70}
+};
+
+// Campos que se repiten automáticamente en otra parte del PDF
+const EXTRA_FIELD_MAP = {
+  municipioRelato:{source:"municipio",page:1,x:62,y:461,size:8,maxWidth:92},
+  placaRelato:{source:"placa",page:1,x:515,y:420,size:8,maxWidth:65}
+};
+
+const CAUSE_MARKS = {
+  A:{page:1,x:166,y:570},
+  B:{page:1,x:267,y:570},
+  C:{page:1,x:399,y:570},
+  D:{page:1,x:512,y:570}
+};
+
+const SIGNATURE_BOX = {page:1,x:17,y:118,width:250,height:26};
+
+// Auto-guardado en localStorage
+const STORAGE_KEY = "soluseguros_form_v1";
+const SIG_KEY = "soluseguros_sig_v1";
+
+// Campos obligatorios: ninguno. Todos son opcionales.
+// (Si quieres volver a marcar obligatorios, añade entradas aquí.)
+const REQUIRED_FIELDS = [];
+
+// Prefijo para identificar PDFs generados por esta app y leer los datos embebidos
+const PDF_METADATA_PREFIX = "SOLU_DATA::";
+
+/* =============================
+   INICIO
+============================= */
+
+document.addEventListener("DOMContentLoaded", () => {
+  buildSteps();
+  markRequiredLabels();
+  bindInputs();
+  bindButtons();
+  setupSignatureCanvas();
+  restoreFromStorage();
+
+  // La pantalla principal debe abrir de inmediato.
+  // La plantilla se carga en segundo plano para evitar esperas largas en celular.
+  document.getElementById("loading").style.display = "none";
+  showStep(0);
+  renderCurrentPage();
+
+  loadTemplate()
+    .then(() => {
+      showToast("Plantilla lista para vista previa y descarga.");
+      // Como el visor debe estar visible desde el paso 1,
+      // renderizamos la primera página apenas termine de cargar la plantilla.
+      setTimeout(renderCurrentPage, 80);
+    })
+    .catch(err => {
+      console.error(err);
+      showToast("No se pudo cargar plantilla.pdf. Verifica que esté en la misma carpeta del HTML.");
+      document.getElementById("statusTemplate").textContent = "Plantilla no cargada";
+    });
+});
+
+/* =============================
+   AUTO-GUARDADO Y VALIDACIÓN
+============================= */
+
+let saveTimer = null;
+function scheduleSave(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveToStorage, 500);
+}
+
+function saveToStorage(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(fields));
+    if(signatureHasData){
+      localStorage.setItem(SIG_KEY, signatureCanvas.toDataURL("image/png"));
+    }
+  }catch(e){
+    console.warn("No se pudo guardar en localStorage:", e);
+  }
+}
+
+function restoreFromStorage(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return;
+    const saved = JSON.parse(raw);
+    if(!saved || typeof saved !== "object") return;
+
+    let restoredCount = 0;
+    Object.assign(fields, saved);
+    document.querySelectorAll(".pdf-field").forEach(input=>{
+      const key = input.dataset.key;
+      if(saved[key] !== undefined && saved[key] !== ""){
+        input.value = saved[key];
+        restoredCount++;
+      }
+    });
+
+    const sig = localStorage.getItem(SIG_KEY);
+    if(sig){
+      const img = new Image();
+      img.onload = () => {
+        sigCtx.drawImage(img, 0, 0, signatureCanvas.width / (window.devicePixelRatio||1), signatureCanvas.height / (window.devicePixelRatio||1));
+        signatureHasData = true;
+        drawOverlay();
+      };
+      img.src = sig;
+    }
+
+    updateFieldCount();
+    if(restoredCount > 0){
+      document.getElementById("restoredToast").style.display = "block";
+    }
+  }catch(e){
+    console.warn("No se pudo restaurar:", e);
+  }
+}
+
+function clearFormStorage(){
+  try{
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(SIG_KEY);
+  }catch(e){}
+}
+
+function clearForm(){
+  fields = {};
+  document.querySelectorAll(".pdf-field").forEach(input=>{
+    input.value = "";
+    input.classList.remove("is-invalid");
+  });
+  clearSignature();
+  clearFormStorage();
+  hideMissingBanner();
+  document.getElementById("restoredToast").style.display = "none";
+  updateFieldCount();
+  drawOverlay();
+  showStep(0);
+  showToast("Formulario limpio. Puedes empezar de nuevo.");
+}
+
+function markRequiredLabels(){
+  const required = new Set(REQUIRED_FIELDS.map(f => f.key));
+  document.querySelectorAll(".pdf-field").forEach(input=>{
+    if(required.has(input.dataset.key)){
+      const label = input.previousElementSibling;
+      if(label && label.tagName === "LABEL"){
+        label.classList.add("required");
+      }
+    }
+  });
+}
+
+function getMissingRequired(){
+  return REQUIRED_FIELDS.filter(f => !String(fields[f.key] || "").trim());
+}
+
+function showMissingBanner(missing){
+  const banner = document.getElementById("missingBanner");
+  const detail = document.getElementById("missingDetail");
+  const labels = missing.slice(0, 4).map(f => f.label).join(", ");
+  const more = missing.length > 4 ? ` y ${missing.length - 4} más` : "";
+  detail.textContent = `${missing.length} sin diligenciar: ${labels}${more}.`;
+  banner.style.display = "block";
+}
+
+function hideMissingBanner(){
+  document.getElementById("missingBanner").style.display = "none";
+  document.querySelectorAll(".pdf-field.is-invalid").forEach(el => el.classList.remove("is-invalid"));
+}
+
+function markMissingFields(missing){
+  document.querySelectorAll(".pdf-field.is-invalid").forEach(el => el.classList.remove("is-invalid"));
+  missing.forEach(f => {
+    const input = document.querySelector(`.pdf-field[data-key="${f.key}"]`);
+    if(input) input.classList.add("is-invalid");
+  });
+}
+
+function validateBeforeSave(){
+  // Sin campos obligatorios — siempre permite guardar.
+  hideMissingBanner();
+  if(!signatureHasData){
+    showToast("Nota: el PDF se generará sin firma. Puedes firmar en el paso 7 si lo necesitas.");
+  }
+  return true;
+}
+
+/* =============================
+   CARGAR PDF PARA EDITAR
+============================= */
+
+async function handlePdfUpload(file){
+  if(!file) return;
+  if(!/pdf$/i.test(file.name) && file.type !== "application/pdf"){
+    showToast("Por favor selecciona un archivo PDF.");
+    return;
+  }
+
+  try{
+    document.getElementById("loading").style.display = "flex";
+    document.querySelector("#loading h5").textContent = "Leyendo PDF";
+    document.querySelector("#loading p").textContent = "Buscando los datos del formulario.";
+
+    const buffer = await file.arrayBuffer();
+    const { PDFDocument } = PDFLib;
+    const doc = await PDFDocument.load(buffer);
+    const subject = doc.getSubject() || "";
+
+    let restored = null;
+    if(subject.startsWith(PDF_METADATA_PREFIX)){
+      try{
+        restored = JSON.parse(subject.slice(PDF_METADATA_PREFIX.length));
+      }catch(e){
+        console.warn("Metadata corrupta:", e);
+      }
+    }
+
+    if(restored && typeof restored === "object"){
+      // PDF generado por esta app: restauramos datos pero SEGUIMOS usando
+      // la plantilla en blanco original para no duplicar texto al re-dibujar.
+      fields = {};
+      Object.assign(fields, restored);
+      document.querySelectorAll(".pdf-field").forEach(input=>{
+        const key = input.dataset.key;
+        input.value = restored[key] !== undefined ? restored[key] : "";
+      });
+      // La plantilla original (plantilla.pdf) sigue cargada en pdfBytes/pdfDoc,
+      // que se inicializan en loadTemplate(). No las tocamos.
+      updateFieldCount();
+      saveToStorage();
+      drawOverlay();
+      const total = Object.keys(restored).filter(k => String(restored[k]||"").trim()).length;
+      showToast(`Datos restaurados del PDF (${total} campos). Puedes editar y volver a guardar.`);
+    }else{
+      // PDF no generado por la app: lo tratamos como nueva plantilla
+      // (útil si quieres dibujar sobre otro PDF base).
+      const confirmUse = confirm(
+        "Este PDF no contiene datos del formulario. ¿Quieres usarlo como nueva plantilla en blanco para dibujar el formulario encima?"
+      );
+      if(confirmUse){
+        pdfBytes = buffer.slice(0);
+        pdfDoc = await pdfjsLib.getDocument({data: buffer.slice(0)}).promise;
+        pageCount = pdfDoc.numPages;
+        currentPage = 1;
+        document.getElementById("statusTemplate").textContent = "PDF cargado como plantilla";
+        renderCurrentPage();
+        showToast("PDF cargado como plantilla. Diligencia el formulario para dibujar sobre él.");
+      }else{
+        showToast("Operación cancelada.");
+      }
+    }
+  }catch(err){
+    console.error(err);
+    showToast("No se pudo leer el PDF. Asegúrate de que sea un PDF válido.");
+  }finally{
+    document.getElementById("loading").style.display = "none";
+    document.querySelector("#loading h5").textContent = "Preparando formulario";
+    document.querySelector("#loading p").textContent = "Cargando la plantilla y dejando todo listo para diligenciar.";
+  }
+}
+
+/* =============================
+   PASOS / UI
+============================= */
+
+function buildSteps(){
+  const box = document.getElementById("stepIndicator");
+  box.innerHTML = "";
+  STEPS.forEach((name,idx)=>{
+    const b = document.createElement("button");
+    b.className = "step-dot";
+    b.textContent = `${idx+1}. ${name}`;
+    b.onclick = () => showStep(idx);
+    box.appendChild(b);
+  });
+}
+
+function showStep(idx){
+  currentStep = idx;
+  document.querySelectorAll(".step").forEach(step=>{
+    step.style.display = Number(step.dataset.step) === idx ? "block" : "none";
+  });
+
+  document.querySelectorAll(".step-dot").forEach((btn,i)=>{
+    btn.classList.toggle("active", i === idx);
+  });
+
+  document.getElementById("btnBack").disabled = idx === 0;
+  document.getElementById("btnNext").textContent = idx === STEPS.length - 1 ? "Guardar PDF" : "Siguiente";
+
+  if(idx === STEPS.length - 1){
+    document.getElementById("viewerCard").style.display = "block";
+    setTimeout(renderCurrentPage, 150);
+  }
+}
+
+function bindButtons(){
+  document.getElementById("btnBack").onclick = () => {
+    if(currentStep > 0) showStep(currentStep - 1);
+  };
+
+  document.getElementById("btnNext").onclick = async () => {
+    if(currentStep < STEPS.length - 1){
+      showStep(currentStep + 1);
+    }else{
+      if(validateBeforeSave()) await savePdf();
+    }
+  };
+
+  const btnSaveDesktop = document.getElementById("btnSaveDesktop");
+  if(btnSaveDesktop){
+    btnSaveDesktop.onclick = async () => {
+      if(validateBeforeSave()) await savePdf();
+    };
+  }
+
+  document.getElementById("btnClearForm").onclick = () => {
+    if(confirm("¿Seguro que quieres borrar todo el formulario? Esta acción no se puede deshacer.")){
+      clearForm();
+    }
+  };
+
+  const dismissBtn = document.getElementById("btnDismissRestored");
+  if(dismissBtn){
+    dismissBtn.onclick = () => {
+      document.getElementById("restoredToast").style.display = "none";
+    };
+  }
+
+  const clearRestoredBtn = document.getElementById("btnClearRestored");
+  if(clearRestoredBtn){
+    clearRestoredBtn.onclick = () => {
+      document.getElementById("restoredToast").style.display = "none";
+      if(confirm("¿Borrar los datos restaurados y empezar de cero?")){
+        clearForm();
+      }
+    };
+  }
+
+  const uploadInput = document.getElementById("pdfUploadInput");
+  if(uploadInput){
+    uploadInput.addEventListener("change", (e) => {
+      const file = e.target.files && e.target.files[0];
+      if(file) handlePdfUpload(file);
+      e.target.value = ""; // permite re-cargar el mismo archivo
+    });
+  }
+
+  const uploadHeaderBtn = document.getElementById("btnUploadHeader");
+  if(uploadHeaderBtn){
+    uploadHeaderBtn.addEventListener("click", () => {
+      uploadInput && uploadInput.click();
+    });
+  }
+
+  // Toggle del preview (en móvil arranca cerrado, en desktop abierto)
+  const viewerCard = document.getElementById("viewerCard");
+  const viewerToggle = document.getElementById("viewerToggle");
+  const isMobile = window.innerWidth < 900;
+  if(isMobile){
+    viewerCard.classList.add("viewer-collapsed");
+  }
+  if(viewerToggle){
+    viewerToggle.addEventListener("click", () => {
+      const wasCollapsed = viewerCard.classList.contains("viewer-collapsed");
+      viewerCard.classList.toggle("viewer-collapsed");
+      if(wasCollapsed){
+        // Al abrir, re-renderizamos para que el contenido cargue correctamente
+        setTimeout(renderCurrentPage, 60);
+      }
+    });
+  }
+
+  document.getElementById("btnShowPreview").onclick = () => {
+    const vc = document.getElementById("viewerCard");
+    vc.style.display = "block";
+    vc.classList.remove("viewer-collapsed");
+    setTimeout(renderCurrentPage, 60);
+    vc.scrollIntoView({behavior:"smooth", block:"start"});
+  };
+
+  document.getElementById("prevPage").onclick = () => {
+    if(currentPage > 1){
+      currentPage--;
+      renderCurrentPage();
+    }
+  };
+
+  document.getElementById("nextPage").onclick = () => {
+    if(currentPage < pageCount){
+      currentPage++;
+      renderCurrentPage();
+    }
+  };
+
+  document.getElementById("zoomIn").onclick = () => {
+    zoom = Math.min(2.2, zoom + .15);
+    renderCurrentPage();
+  };
+
+  document.getElementById("zoomOut").onclick = () => {
+    zoom = Math.max(.45, zoom - .15);
+    renderCurrentPage();
+  };
+
+  document.getElementById("btnClearSignature").onclick = () => {
+    clearSignature();
+    showToast("Firma limpiada.");
+  };
+}
+
+function bindInputs(){
+  document.querySelectorAll(".pdf-field").forEach(input=>{
+    const key = input.dataset.key;
+    fields[key] = input.value || "";
+
+    input.addEventListener("input",()=>{
+      fields[key] = input.value || "";
+      input.classList.remove("is-invalid");
+      hideMissingBannerIfResolved();
+      updateFieldCount();
+      scheduleSave();
+      if(document.getElementById("viewerCard").style.display !== "none"){
+        drawOverlay();
+      }
+    });
+
+    input.addEventListener("change",()=>{
+      fields[key] = input.value || "";
+      input.classList.remove("is-invalid");
+      hideMissingBannerIfResolved();
+      updateFieldCount();
+      scheduleSave();
+      drawOverlay();
+    });
+  });
+}
+
+function hideMissingBannerIfResolved(){
+  const banner = document.getElementById("missingBanner");
+  if(banner.style.display === "none") return;
+  if(getMissingRequired().length === 0){
+    hideMissingBanner();
+  }
+}
+
+function updateFieldCount(){
+  const count = Object.values(fields).filter(v => String(v || "").trim()).length;
+  document.getElementById("statusFields").textContent = `Campos: ${count}`;
+}
+
+function showToast(msg){
+  const toast = document.getElementById("toastApp");
+  document.getElementById("toastText").textContent = msg;
+  toast.style.display = "block";
+  clearTimeout(showToast.timer);
+  showToast.timer = setTimeout(()=> toast.style.display = "none", 2600);
+}
+
+/* =============================
+   PDF PREVIEW
+============================= */
+
+async function loadTemplate(){
+  const res = await fetch(TEMPLATE_URL);
+  if(!res.ok) throw new Error("No se encontró plantilla.pdf");
+  pdfBytes = await res.arrayBuffer();
+  pdfDoc = await pdfjsLib.getDocument({data:pdfBytes}).promise;
+  pageCount = pdfDoc.numPages;
+  document.getElementById("pageInfo").textContent = `Página ${currentPage} / ${pageCount}`;
+  document.getElementById("statusTemplate").textContent = "Plantilla cargada";
+}
+
+function getPreviewRenderRatio(cssVp){
+  const dpr = window.devicePixelRatio || 1;
+
+  // Balance entre nitidez y velocidad.
+  // Antes se usaba hasta 3x al abrir, lo cual demoraba mucho en celulares.
+  let ratio = window.innerWidth < 900
+    ? Math.min(2.0, Math.max(1.45, dpr))
+    : Math.min(2.2, Math.max(1.35, dpr));
+
+  // Límite de seguridad: evita canvas gigantes que congelan teléfonos.
+  if(cssVp){
+    const maxPixels = window.innerWidth < 900 ? 1800000 : 2600000;
+    const pixels = cssVp.width * cssVp.height * ratio * ratio;
+    if(pixels > maxPixels){
+      ratio = Math.sqrt(maxPixels / (cssVp.width * cssVp.height));
+    }
+  }
+
+  return Math.max(1.25, ratio);
+}
+
+async function renderCurrentPage(){
+  if(!pdfDoc){
+    document.getElementById("pageInfo").textContent = "Cargando PDF...";
+    const placeholder = document.getElementById("pdfPlaceholder");
+    if(placeholder) placeholder.style.display = "flex";
+    return;
+  }
+
+  const job = ++renderJob;
+  const page = await pdfDoc.getPage(currentPage);
+  if(job !== renderJob) return;
+
+  const cssVp = page.getViewport({scale:zoom});
+  renderRatio = getPreviewRenderRatio(cssVp);
+  const renderVp = page.getViewport({scale:zoom * renderRatio});
+
+  pdfCanvas.width = Math.floor(renderVp.width);
+  pdfCanvas.height = Math.floor(renderVp.height);
+  drawCanvas.width = Math.floor(renderVp.width);
+  drawCanvas.height = Math.floor(renderVp.height);
+
+  pdfCanvas.style.width = `${cssVp.width}px`;
+  pdfCanvas.style.height = `${cssVp.height}px`;
+  drawCanvas.style.width = `${cssVp.width}px`;
+  drawCanvas.style.height = `${cssVp.height}px`;
+
+  pdfCtx.setTransform(1,0,0,1,0,0);
+  overlayCtx.setTransform(1,0,0,1,0,0);
+  pdfCtx.clearRect(0,0,pdfCanvas.width,pdfCanvas.height);
+  overlayCtx.clearRect(0,0,drawCanvas.width,drawCanvas.height);
+
+  const placeholder = document.getElementById("pdfPlaceholder");
+  if(placeholder) placeholder.style.display = "none";
+
+  document.getElementById("pageInfo").textContent = `Cargando página ${currentPage}...`;
+
+  await page.render({canvasContext:pdfCtx, viewport:renderVp}).promise;
+  if(job !== renderJob) return;
+
+  previewRendered = true;
+  document.getElementById("pageInfo").textContent = `Página ${currentPage} / ${pageCount}`;
+  drawOverlay();
+}
+
+function getDrawableItems(){
+  const base = Object.keys(FIELD_MAP).map(key => ({
+    key,
+    cfg: FIELD_MAP[key],
+    value: fields[key]
+  }));
+
+  const extras = Object.keys(EXTRA_FIELD_MAP).map(key => {
+    const cfg = EXTRA_FIELD_MAP[key];
+    return {
+      key,
+      cfg,
+      value: fields[cfg.source]
+    };
+  });
+
+  return base.concat(extras);
+}
+
+function drawOverlay(){
+  if(!drawCanvas.width || !drawCanvas.height) return;
+  overlayCtx.setTransform(1,0,0,1,0,0);
+  overlayCtx.clearRect(0,0,drawCanvas.width,drawCanvas.height);
+  overlayCtx.setTransform(renderRatio,0,0,renderRatio,0,0);
+  overlayCtx.fillStyle = "black";
+  overlayCtx.strokeStyle = "#0d6efd";
+  overlayCtx.lineWidth = 1;
+
+  getDrawableItems().forEach(item=>{
+    const cfg = item.cfg;
+    if(cfg.page !== currentPage) return;
+
+    let value = item.value || "";
+    if(!String(value).trim()) return;
+
+    value = formatValueForField(item.key, value, cfg);
+
+    const fontSize = Math.max(7, cfg.size * zoom);
+    overlayCtx.font = `${fontSize}px Arial`;
+    overlayCtx.fillStyle = "black";
+
+    if(cfg.mark){
+      drawCanvasMark(value, cfg, fontSize);
+      return;
+    }
+
+    if(cfg.cause){
+      drawCanvasCauseMark(value, fontSize);
+      return;
+    }
+
+    if(cfg.marks){
+      drawCanvasOptionMark(value, cfg.marks, fontSize);
+      return;
+    }
+
+    const x = cfg.x * zoom;
+    const y = cfg.y * zoom;
+    drawCanvasWrappedText(overlayCtx, value, x, y, cfg.maxWidth * zoom, fontSize, cfg);
+  });
+
+  if(currentPage === 1 && signatureHasData){
+    overlayCtx.drawImage(
+      signatureCanvas,
+      SIGNATURE_BOX.x * zoom,
+      SIGNATURE_BOX.y * zoom,
+      SIGNATURE_BOX.width * zoom,
+      SIGNATURE_BOX.height * zoom
+    );
+  }
+}
+
+function drawCanvasMark(value, cfg, fontSize){
+  const val = String(value).toUpperCase();
+  const x = (val === "NO" && cfg.noX ? cfg.noX : cfg.x) * zoom;
+  const y = cfg.y * zoom;
+  overlayCtx.font = `bold ${fontSize}px Arial`;
+  overlayCtx.fillText("X", x, y);
+}
+
+function drawCanvasCauseMark(value, fontSize){
+  const val = String(value).toUpperCase();
+  const pos = CAUSE_MARKS[val];
+  if(!pos || pos.page !== currentPage) return;
+  overlayCtx.font = `bold ${fontSize}px Arial`;
+  overlayCtx.fillText("X", pos.x * zoom, pos.y * zoom);
+}
+
+function drawCanvasOptionMark(value, marks, fontSize){
+  const key = String(value).toUpperCase().trim();
+  const pos = marks[key];
+  if(!pos) return;
+  overlayCtx.font = `bold ${fontSize}px Arial`;
+  overlayCtx.fillText("X", pos.x * zoom, pos.y * zoom);
+}
+
+function measureCanvasLines(ctx, text, size, maxWidth){
+  ctx.font = `${size}px Arial`;
+  const words = String(text).split(/\s+/).filter(Boolean);
+  if(!words.length) return [""];
+
+  const lines = [];
+  let line = "";
+
+  const pushChunks = (chunks) => {
+    for(const chunk of chunks){
+      const test = line ? line + " " + chunk : chunk;
+      if(ctx.measureText(test).width > maxWidth && line){
+        lines.push(line);
+        line = chunk;
+      }else{
+        line = test;
+      }
+    }
+  };
+
+  for(const word of words){
+    if(ctx.measureText(word).width <= maxWidth){
+      pushChunks([word]);
+    }else{
+      pushChunks(splitLongWordByWidth(word, w => ctx.measureText(w).width, maxWidth));
+    }
+  }
+  if(line) lines.push(line);
+  return lines;
+}
+
+function addEllipsisCanvas(ctx, line, size, maxWidth){
+  ctx.font = `${size}px Arial`;
+  let out = String(line || "");
+  while(out && ctx.measureText(out + "...").width > maxWidth){
+    out = out.slice(0, -1).trimEnd();
+  }
+  return out ? out + "..." : "...";
+}
+
+function fitCanvasText(ctx, text, maxWidth, startSize, cfg){
+  const maxLines = cfg.lines || 1;
+  const minSize = cfg.minSize || Math.min(startSize, 5.5);
+  let size = startSize;
+  let lines = measureCanvasLines(ctx, text, size, maxWidth);
+
+  while(size > minSize && lines.length > maxLines){
+    size = Math.max(minSize, +(size - 0.25).toFixed(2));
+    lines = measureCanvasLines(ctx, text, size, maxWidth);
+  }
+
+  if(lines.length > maxLines){
+    lines = lines.slice(0, maxLines);
+    lines[maxLines - 1] = addEllipsisCanvas(ctx, lines[maxLines - 1], size, maxWidth);
+  }
+
+  return { size, lines };
+}
+
+function drawCanvasWrappedText(ctx, text, x, y, maxWidth, fontSize, cfg){
+  const fitted = fitCanvasText(ctx, text, maxWidth, fontSize, cfg);
+  const lineHeight = cfg.lineHeight ? cfg.lineHeight * zoom : fitted.size * 1.2;
+  ctx.font = `${fitted.size}px Arial`;
+  fitted.lines.forEach((ln,i)=> ctx.fillText(ln, x, y + (i * lineHeight)));
+}
+
+/* =============================
+   FIRMA
+============================= */
+
+function setupSignatureCanvas(){
+  resizeSignatureCanvas();
+
+  window.addEventListener("resize",()=>{
+    const oldData = signatureCanvas.toDataURL("image/png");
+    resizeSignatureCanvas();
+    if(signatureHasData){
+      const img = new Image();
+      img.onload = () => sigCtx.drawImage(img,0,0,signatureCanvas.width,signatureCanvas.height);
+      img.src = oldData;
+    }
+  });
+
+  signatureCanvas.addEventListener("pointerdown", startSignature);
+  signatureCanvas.addEventListener("pointermove", moveSignature);
+  window.addEventListener("pointerup", endSignature);
+}
+
+function resizeSignatureCanvas(){
+  const box = signatureCanvas.getBoundingClientRect();
+  const ratio = window.devicePixelRatio || 1;
+  signatureCanvas.width = Math.max(320, box.width * ratio);
+  signatureCanvas.height = 210 * ratio;
+  sigCtx.setTransform(ratio,0,0,ratio,0,0);
+  sigCtx.lineWidth = 2.2;
+  sigCtx.lineCap = "round";
+  sigCtx.strokeStyle = "#111827";
+}
+
+function signaturePos(e){
+  const r = signatureCanvas.getBoundingClientRect();
+  return {x:e.clientX-r.left, y:e.clientY-r.top};
+}
+
+function startSignature(e){
+  e.preventDefault();
+  sigDrawing = true;
+  signatureHasData = true;
+  const p = signaturePos(e);
+  sigCtx.beginPath();
+  sigCtx.moveTo(p.x,p.y);
+}
+
+function moveSignature(e){
+  if(!sigDrawing) return;
+  e.preventDefault();
+  const p = signaturePos(e);
+  sigCtx.lineTo(p.x,p.y);
+  sigCtx.stroke();
+  drawOverlay();
+}
+
+function endSignature(){
+  if(sigDrawing) scheduleSave();
+  sigDrawing = false;
+}
+
+function clearSignature(){
+  sigCtx.clearRect(0,0,signatureCanvas.width,signatureCanvas.height);
+  signatureHasData = false;
+  try{ localStorage.removeItem(SIG_KEY); }catch(e){}
+  drawOverlay();
+}
+
+/* =============================
+   GENERAR PDF
+============================= */
+
+async function savePdf(){
+  if(!pdfBytes){
+    showToast("La plantilla todavía no está cargada.");
+    return;
+  }
+
+  try{
+    document.getElementById("loading").style.display = "flex";
+    document.querySelector("#loading h5").textContent = "Generando PDF";
+    document.querySelector("#loading p").textContent = "Insertando los datos y preparando la descarga.";
+
+    const { PDFDocument, StandardFonts, rgb } = PDFLib;
+    const out = await PDFDocument.load(pdfBytes);
+    const font = await out.embedFont(StandardFonts.Helvetica);
+    const pages = out.getPages();
+
+    // Embebe los datos del formulario en el Subject del PDF para poder re-editarlo
+    try{
+      const payload = PDF_METADATA_PREFIX + JSON.stringify(fields);
+      out.setSubject(payload);
+      out.setTitle("Declaración de siniestro - Soluasistencia");
+      out.setProducer("Soluasistencia Formulario Móvil");
+    }catch(e){
+      console.warn("No se pudo embeber metadata:", e);
+    }
+
+    getDrawableItems().forEach(item=>{
+      const raw = item.value;
+      if(!String(raw || "").trim()) return;
+
+      const cfg = item.cfg;
+      const page = pages[cfg.page - 1];
+      if(!page) return;
+
+      const width = page.getWidth();
+      const height = page.getHeight();
+      const scaleX = width / PDF_PAGE_W;
+      const scaleY = height / PDF_PAGE_H;
+
+      const value = formatValueForField(item.key, raw, cfg);
+      const x = cfg.x * scaleX;
+      const y = height - (cfg.y * scaleY);
+      const fontSize = cfg.size * scaleY;
+
+      if(cfg.mark){
+        drawMark(page, cfg, raw, font, fontSize, scaleX, scaleY);
+      }else if(cfg.cause){
+        drawCauseMark(page, raw, font, fontSize, scaleX, scaleY);
+      }else if(cfg.marks){
+        drawOptionMark(page, cfg.marks, raw, font, fontSize, scaleX, scaleY);
+      }else{
+        drawPdfWrappedText(page, value, x, y, cfg.maxWidth * scaleX, font, fontSize, cfg, scaleY);
+      }
+    });
+
+    if(signatureHasData){
+      const pngDataUrl = signatureCanvas.toDataURL("image/png");
+      const pngBytes = dataUrlToUint8Array(pngDataUrl);
+      const sigImg = await out.embedPng(pngBytes);
+      const page = pages[0];
+      const scaleX = page.getWidth() / PDF_PAGE_W;
+      const scaleY = page.getHeight() / PDF_PAGE_H;
+      page.drawImage(sigImg,{
+        x: SIGNATURE_BOX.x * scaleX,
+        y: page.getHeight() - ((SIGNATURE_BOX.y + SIGNATURE_BOX.height) * scaleY),
+        width: SIGNATURE_BOX.width * scaleX,
+        height: SIGNATURE_BOX.height * scaleY
+      });
+    }
+
+    const bytes = await out.save();
+    const placa = cleanFilePart(fields.placa || "SINIESTRO");
+    const fecha = cleanFilePart(formatDateForFile(fields.fechaSiniestro) || new Date().toISOString().slice(0,10));
+    downloadBytes(bytes, `SINIESTRO_${placa}_${fecha}.pdf`);
+
+    showToast("PDF generado correctamente.");
+  }catch(err){
+    console.error(err);
+    showToast("No se pudo generar el PDF. Revisa la consola para más detalle.");
+  }finally{
+    document.getElementById("loading").style.display = "none";
+    document.querySelector("#loading h5").textContent = "Preparando formulario";
+    document.querySelector("#loading p").textContent = "Cargando la plantilla y dejando todo listo para diligenciar.";
+  }
+}
+
+function measurePdfLines(text, font, size, maxWidth){
+  const words = String(text).split(/\s+/).filter(Boolean);
+  if(!words.length) return [""];
+
+  const lines = [];
+  let line = "";
+
+  const pushChunks = (chunks) => {
+    for(const chunk of chunks){
+      const test = line ? line + " " + chunk : chunk;
+      const testWidth = font.widthOfTextAtSize(test, size);
+      if(testWidth > maxWidth && line){
+        lines.push(line);
+        line = chunk;
+      }else{
+        line = test;
+      }
+    }
+  };
+
+  for(const word of words){
+    if(font.widthOfTextAtSize(word, size) <= maxWidth){
+      pushChunks([word]);
+    }else{
+      pushChunks(splitLongWordByWidth(word, w => font.widthOfTextAtSize(w, size), maxWidth));
+    }
+  }
+  if(line) lines.push(line);
+  return lines;
+}
+
+function splitLongWordByWidth(word, measure, maxWidth){
+  const parts = [];
+  let buf = "";
+  for(const ch of String(word)){
+    const test = buf + ch;
+    if(measure(test) > maxWidth && buf){
+      parts.push(buf);
+      buf = ch;
+    }else{
+      buf = test;
+    }
+  }
+  if(buf) parts.push(buf);
+  return parts;
+}
+
+function addEllipsisPdf(line, font, size, maxWidth){
+  let out = String(line || "");
+  while(out && font.widthOfTextAtSize(out + "...", size) > maxWidth){
+    out = out.slice(0, -1).trimEnd();
+  }
+  return out ? out + "..." : "...";
+}
+
+function fitPdfText(text, font, startSize, maxWidth, cfg){
+  const maxLines = cfg.lines || 1;
+  const minSize = cfg.minSize || Math.min(startSize, 5.5);
+  let size = startSize;
+  let lines = measurePdfLines(text, font, size, maxWidth);
+
+  while(size > minSize && lines.length > maxLines){
+    size = Math.max(minSize, +(size - 0.25).toFixed(2));
+    lines = measurePdfLines(text, font, size, maxWidth);
+  }
+
+  if(lines.length > maxLines){
+    lines = lines.slice(0, maxLines);
+    lines[maxLines - 1] = addEllipsisPdf(lines[maxLines - 1], font, size, maxWidth);
+  }
+
+  return { size, lines };
+}
+
+function drawPdfWrappedText(page, text, x, y, maxWidth, font, size, cfg, scaleY){
+  const fitted = fitPdfText(text, font, size, maxWidth, cfg);
+  const lineHeight = cfg.lineHeight ? cfg.lineHeight * scaleY : fitted.size * 1.25;
+
+  fitted.lines.forEach((ln,i)=>{
+    page.drawText(ln,{
+      x,
+      y: y - (i * lineHeight),
+      size: fitted.size,
+      font,
+      color: PDFLib.rgb(0,0,0)
+    });
+  });
+}
+
+function drawMark(page, cfg, rawValue, font, size, scaleX, scaleY){
+  const val = String(rawValue).toUpperCase();
+  const markX = (val === "NO" && cfg.noX ? cfg.noX : cfg.x) * scaleX;
+  const markY = page.getHeight() - (cfg.y * scaleY);
+
+  page.drawText("X",{
+    x: markX,
+    y: markY,
+    size:size+1,
+    font,
+    color: PDFLib.rgb(0,0,0)
+  });
+}
+
+function drawCauseMark(page, rawValue, font, size, scaleX, scaleY){
+  const val = String(rawValue).toUpperCase();
+  const pos = CAUSE_MARKS[val];
+  if(!pos) return;
+
+  page.drawText("X",{
+    x: pos.x * scaleX,
+    y: page.getHeight() - (pos.y * scaleY),
+    size:size+1,
+    font,
+    color: PDFLib.rgb(0,0,0)
+  });
+}
+
+function drawOptionMark(page, marks, rawValue, font, size, scaleX, scaleY){
+  const key = String(rawValue).toUpperCase().trim();
+  const pos = marks[key];
+  if(!pos) return;
+
+  page.drawText("X",{
+    x: pos.x * scaleX,
+    y: page.getHeight() - (pos.y * scaleY),
+    size:size+1,
+    font,
+    color: PDFLib.rgb(0,0,0)
+  });
+}
+
+function formatValueForField(key, value, cfg){
+  let v = String(value || "").trim();
+
+  if(cfg.type === "date"){
+    return formatDate(v);
+  }
+
+  if(key.toLowerCase().includes("placa")){
+    return v.toUpperCase();
+  }
+
+  return v;
+}
+
+function formatDate(v){
+  if(!v) return "";
+  if(/^\d{4}-\d{2}-\d{2}$/.test(v)){
+    const [y,m,d] = v.split("-");
+    return `${d}/${m}/${y}`;
+  }
+  return v;
+}
+
+function formatDateForFile(v){
+  if(!v) return "";
+  return String(v).replaceAll("/","-");
+}
+
+function cleanFilePart(v){
+  return String(v).trim().replace(/[^\w\-]+/g,"_").toUpperCase();
+}
+
+function dataUrlToUint8Array(dataUrl){
+  const base64 = dataUrl.split(",")[1];
+  const binary = atob(base64);
+  const len = binary.length;
+  const bytes = new Uint8Array(len);
+  for(let i=0;i<len;i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+
+function downloadBytes(bytes, filename){
+  const blob = new Blob([bytes], {type:"application/pdf"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>{
+    URL.revokeObjectURL(url);
+    a.remove();
+  }, 1000);
+}
+</script>
+
+</body>
+</html>
+
+
+
