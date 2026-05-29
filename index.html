@@ -2,8 +2,17 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 <title>Formulario Móvil de Siniestros – Soluasistencia</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#008f45">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Siniestros">
+<link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+<link rel="apple-touch-icon" href="icons/icon-192.svg">
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
@@ -33,6 +42,10 @@ body{
   background:linear-gradient(135deg,var(--verde),var(--verde-oscuro));
   color:white;
   padding:12px 14px;
+  /* Respeta la barra de estado del iPhone (notch / dynamic island) */
+  padding-top:max(12px, env(safe-area-inset-top));
+  padding-left:max(14px, env(safe-area-inset-left));
+  padding-right:max(14px, env(safe-area-inset-right));
   box-shadow:0 3px 14px rgba(0,0,0,.18);
 }
 
@@ -86,6 +99,49 @@ body{
   white-space:nowrap;
 }
 .header-action-btn:hover{background:rgba(255,255,255,.28)}
+
+.version-badge{
+  display:inline-block;
+  font-size:10px;
+  font-weight:700;
+  background:rgba(255,255,255,.22);
+  border:1px solid rgba(255,255,255,.35);
+  color:#fff;
+  padding:2px 7px;
+  border-radius:999px;
+  margin-left:6px;
+  vertical-align:middle;
+  letter-spacing:.3px;
+}
+
+/* Banner de nueva versión disponible (PWA) */
+.update-banner{
+  position:fixed;
+  bottom:90px;
+  left:12px;
+  right:12px;
+  max-width:480px;
+  margin:0 auto;
+  background:#17213b;
+  color:#fff;
+  border-radius:14px;
+  padding:12px 14px;
+  box-shadow:0 12px 30px rgba(0,0,0,.25);
+  display:none;
+  z-index:80;
+  align-items:center;
+  gap:10px;
+  font-size:13px;
+}
+.update-banner.is-visible{display:flex}
+.update-banner strong{display:block;font-size:14px;margin-bottom:2px}
+.update-banner-text{flex:1;min-width:0}
+.update-banner button{
+  background:var(--verde);color:#fff;border:none;
+  font-weight:700;border-radius:10px;padding:8px 12px;
+  cursor:pointer;font-size:13px;
+}
+.update-banner button.secondary{background:transparent;border:1px solid rgba(255,255,255,.4)}
 
 .brand-logo{
   width:58px;
@@ -320,6 +376,10 @@ canvas{
   border-top:1px solid var(--borde);
   box-shadow:0 -6px 22px rgba(0,0,0,.12);
   padding:10px;
+  /* Deja espacio para el home indicator del iPhone */
+  padding-bottom:max(10px, calc(env(safe-area-inset-bottom) + 8px));
+  padding-left:max(10px, env(safe-area-inset-left));
+  padding-right:max(10px, env(safe-area-inset-right));
 }
 
 .bottom-actions{
@@ -471,13 +531,19 @@ canvas{
 
 @media(min-width:900px){
   .main-wrap{
-    max-width:1180px;
+    max-width:1280px;
     margin:0 auto;
     display:grid;
-    grid-template-columns:1fr 420px;
-    gap:14px;
-    padding-bottom:20px;
+    /* Formulario con ancho cómodo (no super estirado) + preview ancho real */
+    grid-template-columns:minmax(420px, 560px) 1fr;
+    gap:18px;
+    padding:14px 16px 20px;
     align-items:start;
+  }
+
+  .top-utility-bar{
+    max-width:1280px;
+    padding:8px 16px 0;
   }
 
   .viewer-card{
@@ -485,12 +551,15 @@ canvas{
     margin-top:0;
     position:sticky;
     top:84px;
-    max-height:calc(100vh - 170px);
-    overflow:auto;
+    max-height:calc(100vh - 130px);
+    overflow:hidden;
+    display:flex !important;
+    flex-direction:column;
   }
 
   .viewer{
-    max-height:calc(100vh - 280px);
+    max-height:calc(100vh - 240px);
+    flex:1;
   }
 
   /* En desktop el viewer no debe colapsar (siempre visible al lado) */
@@ -507,20 +576,46 @@ canvas{
     bottom:0;
   }
 
-  /* Botones equilibrados, sin Guardar PDF duplicado */
+  /* Botones equilibrados (sin Guardar PDF duplicado), bajo el formulario */
   .bottom-actions{
     grid-template-columns:1fr 1fr;
+    max-width:560px;
   }
+
+  /* Damage bar mejor distribuida en desktop */
+  .damage-bar{
+    display:grid;
+    grid-template-columns:auto 1fr;
+    align-items:center;
+    gap:14px;
+  }
+  .damage-bar-label{margin:0;white-space:nowrap}
+  .damage-bar-buttons{margin:0}
+}
+
+@media(min-width:1200px){
+  .main-wrap{
+    grid-template-columns:minmax(480px, 600px) 1fr;
+  }
+  .bottom-actions{max-width:600px}
 }
 
 @media(max-width:520px){
   .main-wrap{
     padding:8px;
-    padding-bottom:102px;
+    padding-bottom:calc(102px + env(safe-area-inset-bottom, 0px));
   }
 
   .step-body{
-    padding:12px;
+    padding:12px 12px 14px;
+  }
+
+  .step-title{
+    font-size:16px;
+  }
+  .step-help{
+    font-size:12.5px;
+    margin-bottom:10px;
   }
 
   .quick-grid{
@@ -528,17 +623,22 @@ canvas{
   }
 
   .viewer{
-    max-height:70vh;
+    max-height:60vh;
   }
 
+  .app-header{
+    padding:9px 12px;
+    padding-top:max(9px, env(safe-area-inset-top));
+  }
   .app-header h1{
-    font-size:15px;
-    line-height:1.2;
+    font-size:14px;
+    line-height:1.15;
+    font-weight:800;
   }
 
   .app-header small{
-    font-size:11px;
-    /* Truncar a 1 línea con … para no apretar tanto el botón */
+    font-size:10.5px;
+    opacity:.85;
     display:-webkit-box;
     -webkit-line-clamp:1;
     -webkit-box-orient:vertical;
@@ -546,23 +646,78 @@ canvas{
   }
 
   .brand-logo{
-    width:44px;
-    height:44px;
-    padding:5px;
+    width:40px;
+    height:40px;
+    padding:4px;
+    border-radius:10px;
   }
 
   .brand-wrap{
     gap:8px;
   }
 
+  .version-badge{
+    font-size:9px;
+    padding:1px 5px;
+    margin-left:4px;
+  }
+
   /* En pantallas pequeñas, solo emoji para ahorrar espacio */
   .header-action-btn .btn-label{display:none}
-  .header-action-btn{padding:8px 10px;font-size:16px}
+  .header-action-btn{padding:7px 10px;font-size:15px}
+
+  /* Tabs más compactos */
+  .step-indicator{
+    padding:8px 10px;
+    gap:5px;
+    scroll-snap-type:x mandatory;
+  }
+  .step-dot{
+    padding:6px 9px;
+    font-size:11.5px;
+    scroll-snap-align:center;
+  }
+
+  /* Barra de daños más cómoda al tap */
+  .damage-bar{
+    padding:8px 10px;
+  }
+  .damage-bar-label{font-size:11.5px;margin-bottom:5px}
+  .draw-damage-btn{
+    font-size:12px;
+    padding:7px 6px;
+    min-height:40px;
+  }
+
+  /* Firma un poco más alta para que no quepa cortada */
+  #signatureCanvas{
+    height:180px;
+  }
+
+  /* Botones inferiores */
+  .btn-main,.btn-soft,.btn-danger-soft{
+    min-height:46px;
+    font-size:14px;
+  }
+
+  /* Espacio cómodo entre filas del formulario */
+  .step-body .row.g-2{
+    --bs-gutter-y:.65rem;
+  }
+
+  /* Banner de actualización flotante: pegado más arriba sobre el bottom-bar */
+  .update-banner{
+    bottom:calc(96px + env(safe-area-inset-bottom, 0px));
+  }
+  .toast-app{
+    bottom:calc(90px + env(safe-area-inset-bottom, 0px));
+  }
 }
 
 /* Muy estrecho (<360px) — Inputs Bootstrap col-6 más cómodos */
 @media(max-width:360px){
   .step-body .col-6{flex:0 0 100%;max-width:100%}
+  .damage-bar-buttons{grid-template-columns:1fr;gap:5px}
 }
 
 /* Validación */
@@ -618,6 +773,210 @@ label.required::after{
 }
 .btn-danger-clear:hover{background:#fff5f5}
 
+/* Barra de dibujo de daños */
+.damage-bar{
+  background:#fff;
+  border:1px solid var(--borde);
+  border-radius:12px;
+  padding:10px 12px;
+  margin-top:8px;
+}
+.damage-bar-label{
+  font-size:12px;
+  font-weight:700;
+  color:#1f2937;
+  margin-bottom:6px;
+}
+.damage-bar-buttons{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:6px;
+}
+
+/* Botones de dibujo de daños - color según el carro */
+.draw-damage-btn{
+  background:#eef2f7;
+  border:1px solid var(--borde);
+  color:#1f2937;
+  font-weight:700;
+  border-radius:10px;
+  padding:8px 10px;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  min-height:42px;
+  font-size:13px;
+  position:relative;
+}
+.draw-damage-btn:hover{filter:brightness(.97)}
+.draw-damage-btn[data-damage-key="asegurado"]{
+  background:#e7f7ee;border-color:#bce9cf;color:#08723a;
+}
+.draw-damage-btn[data-damage-key="tercero1"]{
+  background:#fff7ed;border-color:#fed7aa;color:#9a3412;
+}
+.draw-damage-btn[data-damage-key="tercero2"]{
+  background:#dbeafe;border-color:#bfdbfe;color:#1e40af;
+}
+.draw-damage-btn.has-drawing::after{
+  content:"✓";
+  position:absolute;
+  top:-6px;
+  right:-6px;
+  width:20px;
+  height:20px;
+  background:var(--verde);
+  color:#fff;
+  border:2px solid #fff;
+  border-radius:50%;
+  font-size:11px;
+  font-weight:900;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* Modal de dibujo */
+.modal-backdrop{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.55);
+  z-index:100;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:12px;
+}
+.modal-backdrop.is-open{display:flex}
+
+.modal-card{
+  background:#fff;
+  border-radius:18px;
+  max-width:520px;
+  width:100%;
+  max-height:92vh;
+  overflow:auto;
+  display:flex;
+  flex-direction:column;
+}
+
+/* En celular el modal ocupa toda la pantalla (más cómodo para dibujar) */
+@media(max-width:520px){
+  .modal-backdrop{padding:0}
+  .modal-card{
+    max-width:100%;
+    max-height:100vh;
+    height:100vh;
+    border-radius:0;
+    /* Safe area top/bottom para notch y home indicator */
+    padding-top:env(safe-area-inset-top);
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  .modal-header h3{font-size:15px}
+  .drawing-controls{gap:6px}
+  .color-swatch{width:34px;height:34px}
+  .modal-footer{padding:10px 12px;gap:6px}
+  .modal-footer button{padding:11px;font-size:13.5px;min-height:44px}
+}
+
+.modal-header{
+  padding:14px 16px;
+  border-bottom:1px solid var(--borde);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+}
+.modal-header h3{font-size:16px;font-weight:800;margin:0;color:var(--azul)}
+
+.car-tag{
+  display:inline-block;
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:.6px;
+  padding:3px 9px;
+  border-radius:999px;
+  margin-top:4px;
+  background:#e7f7ee;
+  color:#08723a;
+  border:1px solid #bce9cf;
+}
+.modal-close{
+  background:transparent;border:none;font-size:22px;
+  font-weight:700;cursor:pointer;color:#6b7280;
+  width:32px;height:32px;border-radius:8px;
+}
+.modal-close:hover{background:#f3f4f6}
+
+.modal-body{padding:14px 16px;flex:1}
+.modal-help{
+  font-size:13px;color:#6b7280;margin:0 0 10px;
+}
+
+.drawing-stage{
+  position:relative;
+  background:#f9fafb;
+  border:1px solid var(--borde);
+  border-radius:12px;
+  overflow:hidden;
+  width:100%;
+}
+.drawing-stage canvas{display:block;width:100%}
+.drawing-stage #drawingPaint{
+  position:absolute;inset:0;
+  touch-action:none;
+  cursor:crosshair;
+}
+
+.drawing-controls{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-top:12px;
+  flex-wrap:wrap;
+}
+.color-swatch{
+  width:30px;height:30px;
+  border-radius:50%;
+  border:2px solid #fff;
+  outline:1px solid var(--borde);
+  cursor:pointer;
+  padding:0;
+}
+.color-swatch.active{
+  outline:2px solid var(--verde);
+  transform:scale(1.1);
+}
+.stroke-control{
+  display:flex;align-items:center;gap:6px;
+  margin-left:auto;font-size:13px;color:#374151;
+}
+.stroke-control input{width:80px}
+
+.modal-footer{
+  padding:12px 16px;
+  border-top:1px solid var(--borde);
+  display:flex;
+  gap:8px;
+  background:#f9fafb;
+}
+.modal-footer button{
+  flex:1;
+  border:none;
+  border-radius:12px;
+  padding:12px;
+  font-weight:800;
+  cursor:pointer;
+  min-height:46px;
+}
+.btn-modal-clear{
+  background:#fee2e2;color:#991b1b;
+}
+.btn-modal-cancel{background:#eef2f7;color:#1f2937}
+.btn-modal-save{background:var(--verde);color:#fff}
+
 .top-utility-bar{
   max-width:1180px;
   margin:0 auto;
@@ -663,7 +1022,10 @@ label.required::after{
     <div class="brand-left">
       <img class="brand-logo" src="https://soluasistencia.com/wp-content/uploads/2024/11/logo_solu.png" alt="Logo Soluasistencia">
       <div class="brand-text">
-        <h1>Formulario móvil de siniestros</h1>
+        <h1>
+          Formulario móvil de siniestros
+          <span class="version-badge" id="versionBadge"></span>
+        </h1>
         <small>Soluasistencia · Declaración de responsabilidad civil servicio público</small>
       </div>
     </div>
@@ -680,6 +1042,21 @@ label.required::after{
     Se restauraron datos de una sesión anterior.
     <button type="button" id="btnDismissRestored">OK</button>
     <button type="button" id="btnClearRestored">Empezar nuevo</button>
+  </div>
+
+  <div class="damage-bar">
+    <div class="damage-bar-label">🎨 Dibujar daños sobre un carro:</div>
+    <div class="damage-bar-buttons">
+      <button type="button" class="draw-damage-btn" data-damage-key="asegurado">
+        Asegurado
+      </button>
+      <button type="button" class="draw-damage-btn" data-damage-key="tercero1">
+        Tercero 1
+      </button>
+      <button type="button" class="draw-damage-btn" data-damage-key="tercero2">
+        Tercero 2
+      </button>
+    </div>
   </div>
 </div>
 
@@ -1190,6 +1567,50 @@ label.required::after{
   <div class="box" id="toastText"></div>
 </div>
 
+<!-- Banner de nueva versión PWA disponible -->
+<div class="update-banner" id="updateBanner" role="alert">
+  <div class="update-banner-text">
+    <strong>Nueva versión disponible</strong>
+    <span>Recarga para tener los últimos cambios.</span>
+  </div>
+  <button type="button" id="btnDismissUpdate" class="secondary">Después</button>
+  <button type="button" id="btnApplyUpdate">Actualizar</button>
+</div>
+
+<!-- Modal para dibujar los daños sobre el carro -->
+<div class="modal-backdrop" id="drawingModal" role="dialog" aria-modal="true">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div>
+        <h3 id="drawingModalTitle">Dibujar daños</h3>
+        <span class="car-tag" id="carTag">CARRO</span>
+      </div>
+      <button type="button" class="modal-close" id="drawingModalClose" aria-label="Cerrar">×</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-help">Marca con el dedo o el mouse las zonas afectadas sobre el carro.</p>
+      <div class="drawing-stage" id="drawingStage">
+        <canvas id="drawingBackground"></canvas>
+        <canvas id="drawingPaint"></canvas>
+      </div>
+      <div class="drawing-controls">
+        <button type="button" class="color-swatch active" data-color="#e11d48" style="background:#e11d48" aria-label="Rojo"></button>
+        <button type="button" class="color-swatch" data-color="#1d4ed8" style="background:#1d4ed8" aria-label="Azul"></button>
+        <button type="button" class="color-swatch" data-color="#111827" style="background:#111827" aria-label="Negro"></button>
+        <label class="stroke-control">
+          Grosor
+          <input type="range" id="drawingStroke" min="1" max="8" step="0.5" value="2.5">
+        </label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-modal-clear" id="btnModalClear">Borrar</button>
+      <button type="button" class="btn-modal-cancel" id="btnModalCancel">Cancelar</button>
+      <button type="button" class="btn-modal-save" id="btnModalSave">Guardar</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js"></script>
 <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
@@ -1204,6 +1625,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc =
  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
 
 const TEMPLATE_URL = "plantilla.pdf";
+const APP_VERSION = "1.2.0";
 
 const STEPS = [
   "Accidente",
@@ -1253,13 +1675,13 @@ const FIELD_MAP = {
   // Página 1 - Encabezado (abogado y declarante)
   abogadoNombre:{page:1,x:18,y:113,size:8,maxWidth:280,minSize:5.8},
   abogadoFirma:{page:1,x:305,y:113,size:8,maxWidth:280,minSize:5.8},
-  declaranteTipoDoc:{page:1,y:148,size:8,marks:{
-    CC:{x:322,y:148},
-    CE:{x:346,y:148},
-    TI:{x:370,y:148},
-    OTRO:{x:407,y:148}
+  declaranteTipoDoc:{page:1,y:142,size:8,marks:{
+    CC:{x:340,y:142},
+    CE:{x:362,y:142},
+    TI:{x:383,y:142},
+    OTRO:{x:420,y:142}
   }},
-  declaranteNumDoc:{page:1,x:445,y:148,size:8,maxWidth:135,minSize:5.5},
+  declaranteNumDoc:{page:1,x:455,y:142,size:8,maxWidth:125,minSize:5.5},
 
   // Página 1 - Encabezado y tabla principal
   lugarAccidente:{page:1,x:17,y:188,size:7.5,maxWidth:90,lines:2,lineHeight:8,minSize:5.2},
@@ -1299,8 +1721,8 @@ const FIELD_MAP = {
   // Página 1 - Relato
   yoNombre:{page:1,x:38,y:420,size:8,maxWidth:155,minSize:5.5},
   calidad:{page:1,y:420,size:8,marks:{
-    CONDUCTOR:{x:245,y:420},
-    PROPIETARIO:{x:292,y:420}
+    CONDUCTOR:{x:322,y:420},
+    PROPIETARIO:{x:395,y:420}
   }},
   diaHecho:{page:1,x:51,y:450,size:8,maxWidth:28},
   mesHecho:{page:1,x:118,y:450,size:8,maxWidth:68},
@@ -1363,9 +1785,9 @@ const FIELD_MAP = {
   l1Direccion:{page:2,x:370,y:450,size:7,maxWidth:92},
   l1Telefono:{page:2,x:502,y:450,size:7,maxWidth:75},
   l1Gravedad:{page:2,y:472,size:7,marks:{
-    LEVE:{x:223,y:472},
-    MODERADA:{x:263,y:472},
-    GRAVE:{x:303,y:472}
+    LEVE:{x:183,y:472},
+    MODERADA:{x:245,y:472},
+    GRAVE:{x:308,y:472}
   }},
   l1Hospital:{page:2,x:335,y:483,size:6.5,maxWidth:235,minSize:5.3},
 
@@ -1375,9 +1797,9 @@ const FIELD_MAP = {
   l2Direccion:{page:2,x:370,y:494,size:7,maxWidth:92},
   l2Telefono:{page:2,x:502,y:494,size:7,maxWidth:75},
   l2Gravedad:{page:2,y:516,size:7,marks:{
-    LEVE:{x:223,y:516},
-    MODERADA:{x:263,y:516},
-    GRAVE:{x:303,y:516}
+    LEVE:{x:183,y:516},
+    MODERADA:{x:245,y:516},
+    GRAVE:{x:308,y:516}
   }},
   l2Hospital:{page:2,x:335,y:527,size:6.5,maxWidth:235,minSize:5.3},
 
@@ -1387,9 +1809,9 @@ const FIELD_MAP = {
   l3Direccion:{page:2,x:370,y:538,size:7,maxWidth:92},
   l3Telefono:{page:2,x:502,y:538,size:7,maxWidth:75},
   l3Gravedad:{page:2,y:560,size:7,marks:{
-    LEVE:{x:223,y:560},
-    MODERADA:{x:263,y:560},
-    GRAVE:{x:303,y:560}
+    LEVE:{x:183,y:560},
+    MODERADA:{x:245,y:560},
+    GRAVE:{x:308,y:560}
   }},
   l3Hospital:{page:2,x:335,y:571,size:6.5,maxWidth:235,minSize:5.3},
 
@@ -1434,7 +1856,37 @@ const CAUSE_MARKS = {
   D:{page:1,x:512,y:570}
 };
 
-const SIGNATURE_BOX = {page:1,x:17,y:118,width:250,height:26};
+const SIGNATURE_BOX = {page:1,x:17,y:124,width:250,height:18};
+
+// Regiones (en coordenadas PDF, desde la esquina superior izquierda) donde están
+// las siluetas del carro en la plantilla. Se renderizan en el modal de dibujo
+// y se sobreponen al guardar el PDF.
+const CAR_REGIONS = {
+  asegurado: {
+    page:1, x:485, y:718, width:100, height:55,
+    label:"Vehículo asegurado",
+    short:"ASEGURADO",
+    color:"#08723a",         // verde
+    bg:"#e7f7ee"
+  },
+  tercero1:  {
+    page:2, x:485, y:185, width:100, height:65,
+    label:"Vehículo tercero 1",
+    short:"TERCERO 1",
+    color:"#9a3412",         // naranja
+    bg:"#fff7ed"
+  },
+  tercero2:  {
+    page:2, x:485, y:340, width:100, height:65,
+    label:"Vehículo tercero 2",
+    short:"TERCERO 2",
+    color:"#1e40af",         // azul
+    bg:"#dbeafe"
+  }
+};
+
+const DAMAGE_STORAGE_KEY = "soluseguros_damage_v1";
+let damageDrawings = {}; // { asegurado: dataUrl, tercero1: dataUrl, tercero2: dataUrl }
 
 // Auto-guardado en localStorage
 const STORAGE_KEY = "soluseguros_form_v1";
@@ -1452,12 +1904,19 @@ const PDF_METADATA_PREFIX = "SOLU_DATA::";
 ============================= */
 
 document.addEventListener("DOMContentLoaded", () => {
+  const versionBadge = document.getElementById("versionBadge");
+  if(versionBadge) versionBadge.textContent = "v" + APP_VERSION;
+
+  setupServiceWorker();
+
   buildSteps();
   markRequiredLabels();
   bindInputs();
   bindButtons();
   setupSignatureCanvas();
+  setupDamageDrawing();
   restoreFromStorage();
+  restoreDamageFromStorage();
 
   // La pantalla principal debe abrir de inmediato.
   // La plantilla se carga en segundo plano para evitar esperas largas en celular.
@@ -1478,6 +1937,73 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("statusTemplate").textContent = "Plantilla no cargada";
     });
 });
+
+/* =============================
+   SERVICE WORKER (PWA)
+============================= */
+
+function setupServiceWorker(){
+  if(!("serviceWorker" in navigator)) return;
+
+  // Registramos el SW con la versión en query string. Cada cambio de APP_VERSION
+  // produce una URL distinta, lo que dispara la actualización automáticamente.
+  const swUrl = "sw.js?v=" + APP_VERSION;
+
+  navigator.serviceWorker.register(swUrl).then(reg => {
+    // Si ya hay un SW esperando al arrancar, mostramos el banner de inmediato.
+    if(reg.waiting && navigator.serviceWorker.controller){
+      showUpdateBanner(reg.waiting);
+    }
+
+    reg.addEventListener("updatefound", () => {
+      const newWorker = reg.installing;
+      if(!newWorker) return;
+      newWorker.addEventListener("statechange", () => {
+        if(newWorker.state === "installed" && navigator.serviceWorker.controller){
+          showUpdateBanner(newWorker);
+        }
+      });
+    });
+  }).catch(err => {
+    console.warn("[PWA] No se pudo registrar el service worker:", err);
+  });
+
+  // Cuando el SW que controla la página cambia, recargamos para usar la versión nueva.
+  let isReloading = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if(isReloading) return;
+    isReloading = true;
+    window.location.reload();
+  });
+
+  // Botones del banner
+  const banner = document.getElementById("updateBanner");
+  const applyBtn = document.getElementById("btnApplyUpdate");
+  const dismissBtn = document.getElementById("btnDismissUpdate");
+  if(dismissBtn){
+    dismissBtn.addEventListener("click", () => {
+      if(banner) banner.classList.remove("is-visible");
+    });
+  }
+  if(applyBtn){
+    applyBtn.addEventListener("click", () => {
+      const waitingWorker = applyBtn._waitingWorker;
+      if(waitingWorker){
+        waitingWorker.postMessage({type: "SKIP_WAITING"});
+      }else{
+        window.location.reload();
+      }
+    });
+  }
+}
+
+function showUpdateBanner(waitingWorker){
+  const banner = document.getElementById("updateBanner");
+  const applyBtn = document.getElementById("btnApplyUpdate");
+  if(!banner) return;
+  if(applyBtn) applyBtn._waitingWorker = waitingWorker;
+  banner.classList.add("is-visible");
+}
 
 /* =============================
    AUTO-GUARDADO Y VALIDACIÓN
@@ -1551,6 +2077,7 @@ function clearForm(){
     input.classList.remove("is-invalid");
   });
   clearSignature();
+  clearDamageDrawings();
   clearFormStorage();
   hideMissingBanner();
   document.getElementById("restoredToast").style.display = "none";
@@ -1605,6 +2132,264 @@ function validateBeforeSave(){
     showToast("Nota: el PDF se generará sin firma. Puedes firmar en el paso 7 si lo necesitas.");
   }
   return true;
+}
+
+/* =============================
+   MODAL DE DIBUJO DE DAÑOS
+============================= */
+
+let activeDrawingKey = null;
+let drawingPainting = false;
+let drawingColor = "#e11d48";
+let drawingStrokeWidth = 2.5;
+
+function setupDamageDrawing(){
+  document.querySelectorAll(".draw-damage-btn").forEach(btn => {
+    const key = btn.dataset.damageKey;
+    refreshDamageBtn(btn, key);
+    btn.addEventListener("click", () => openDrawingModal(key));
+  });
+
+  document.getElementById("drawingModalClose").addEventListener("click", closeDrawingModal);
+  document.getElementById("btnModalCancel").addEventListener("click", closeDrawingModal);
+  document.getElementById("btnModalSave").addEventListener("click", saveDrawingFromModal);
+  document.getElementById("btnModalClear").addEventListener("click", clearDrawingPaint);
+
+  document.querySelectorAll(".color-swatch").forEach(sw => {
+    sw.addEventListener("click", () => {
+      document.querySelectorAll(".color-swatch").forEach(s => s.classList.remove("active"));
+      sw.classList.add("active");
+      drawingColor = sw.dataset.color;
+    });
+  });
+
+  document.getElementById("drawingStroke").addEventListener("input", (e) => {
+    drawingStrokeWidth = parseFloat(e.target.value);
+  });
+
+  // Cerrar al hacer click en el backdrop (fuera de la tarjeta)
+  document.getElementById("drawingModal").addEventListener("click", (e) => {
+    if(e.target.id === "drawingModal") closeDrawingModal();
+  });
+
+  setupDrawingCanvasEvents();
+}
+
+function refreshDamageBtn(btn, key){
+  if(damageDrawings[key]){
+    btn.classList.add("has-drawing");
+  }else{
+    btn.classList.remove("has-drawing");
+  }
+}
+
+async function openDrawingModal(key){
+  if(!pdfDoc){
+    showToast("La plantilla todavía no está cargada. Espera unos segundos.");
+    return;
+  }
+  const region = CAR_REGIONS[key];
+  if(!region) return;
+
+  activeDrawingKey = key;
+  document.getElementById("drawingModalTitle").textContent = region.label;
+
+  // Badge con color identificador del carro
+  const tag = document.getElementById("carTag");
+  if(tag){
+    tag.textContent = region.short;
+    tag.style.background = region.bg;
+    tag.style.color = region.color;
+    tag.style.borderColor = region.color + "55";
+  }
+
+  // Color del trazo por defecto: rojo (siempre visible sobre el carro negro)
+  drawingColor = "#e11d48";
+  document.querySelectorAll(".color-swatch").forEach(s => s.classList.remove("active"));
+  const firstSwatch = document.querySelector(".color-swatch[data-color='#e11d48']");
+  if(firstSwatch) firstSwatch.classList.add("active");
+
+  document.getElementById("drawingModal").classList.add("is-open");
+
+  await renderCarBackground(region);
+  loadExistingDrawing(key);
+}
+
+function closeDrawingModal(){
+  document.getElementById("drawingModal").classList.remove("is-open");
+  activeDrawingKey = null;
+}
+
+async function renderCarBackground(region){
+  const bgCanvas = document.getElementById("drawingBackground");
+  const paintCanvas = document.getElementById("drawingPaint");
+  const stage = document.getElementById("drawingStage");
+  const dpr = window.devicePixelRatio || 1;
+
+  // Tamaño visible del lienzo: ancho del modal con relación 64:42 del carro
+  const cssWidth = Math.min(460, stage.clientWidth || 320);
+  const cssHeight = Math.round(cssWidth * (region.height / region.width));
+
+  // Tamaño real (alta resolución) para nitidez
+  const intW = Math.round(cssWidth * dpr);
+  const intH = Math.round(cssHeight * dpr);
+
+  bgCanvas.style.width = cssWidth + "px";
+  bgCanvas.style.height = cssHeight + "px";
+  paintCanvas.style.width = cssWidth + "px";
+  paintCanvas.style.height = cssHeight + "px";
+
+  bgCanvas.width = intW;
+  bgCanvas.height = intH;
+  paintCanvas.width = intW;
+  paintCanvas.height = intH;
+
+  // Renderizar la página PDF a un canvas temporal de alta resolución y recortar la región
+  const page = await pdfDoc.getPage(region.page);
+  const fullScale = 4; // 4x para nitidez del recorte
+  const viewport = page.getViewport({scale: fullScale});
+  const tmp = document.createElement("canvas");
+  tmp.width = viewport.width;
+  tmp.height = viewport.height;
+  const tmpCtx = tmp.getContext("2d");
+  await page.render({canvasContext: tmpCtx, viewport: viewport}).promise;
+
+  // Calcular el recorte de la región
+  const scale = viewport.width / PDF_PAGE_W;
+  const sx = region.x * scale;
+  const sy = region.y * scale;
+  const sw = region.width * scale;
+  const sh = region.height * scale;
+
+  const bgCtx = bgCanvas.getContext("2d");
+  bgCtx.imageSmoothingEnabled = true;
+  bgCtx.imageSmoothingQuality = "high";
+  bgCtx.fillStyle = "#fff";
+  bgCtx.fillRect(0, 0, intW, intH);
+  bgCtx.drawImage(tmp, sx, sy, sw, sh, 0, 0, intW, intH);
+
+  // Preparar el canvas de pintura con DPR escalado
+  const paintCtx = paintCanvas.getContext("2d");
+  paintCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  paintCtx.lineCap = "round";
+  paintCtx.lineJoin = "round";
+  paintCtx.clearRect(0, 0, cssWidth, cssHeight);
+}
+
+function loadExistingDrawing(key){
+  if(!damageDrawings[key]) return;
+  const paintCanvas = document.getElementById("drawingPaint");
+  const paintCtx = paintCanvas.getContext("2d");
+  const img = new Image();
+  img.onload = () => {
+    const cssWidth = parseFloat(paintCanvas.style.width);
+    const cssHeight = parseFloat(paintCanvas.style.height);
+    paintCtx.drawImage(img, 0, 0, cssWidth, cssHeight);
+  };
+  img.src = damageDrawings[key];
+}
+
+function setupDrawingCanvasEvents(){
+  const paintCanvas = document.getElementById("drawingPaint");
+
+  paintCanvas.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    drawingPainting = true;
+    const p = getDrawingPos(e, paintCanvas);
+    const ctx = paintCanvas.getContext("2d");
+    ctx.strokeStyle = drawingColor;
+    ctx.lineWidth = drawingStrokeWidth;
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+  });
+
+  paintCanvas.addEventListener("pointermove", (e) => {
+    if(!drawingPainting) return;
+    e.preventDefault();
+    const p = getDrawingPos(e, paintCanvas);
+    const ctx = paintCanvas.getContext("2d");
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+  });
+
+  const endStroke = () => { drawingPainting = false; };
+  paintCanvas.addEventListener("pointerup", endStroke);
+  paintCanvas.addEventListener("pointercancel", endStroke);
+  paintCanvas.addEventListener("pointerleave", endStroke);
+}
+
+function getDrawingPos(e, canvas){
+  const r = canvas.getBoundingClientRect();
+  return { x: e.clientX - r.left, y: e.clientY - r.top };
+}
+
+function clearDrawingPaint(){
+  const paintCanvas = document.getElementById("drawingPaint");
+  const paintCtx = paintCanvas.getContext("2d");
+  const cssWidth = parseFloat(paintCanvas.style.width);
+  const cssHeight = parseFloat(paintCanvas.style.height);
+  paintCtx.clearRect(0, 0, cssWidth, cssHeight);
+}
+
+function saveDrawingFromModal(){
+  if(!activeDrawingKey) return;
+  const paintCanvas = document.getElementById("drawingPaint");
+
+  // Verifica si el canvas tiene algún píxel pintado
+  const ctx = paintCanvas.getContext("2d");
+  const imgData = ctx.getImageData(0, 0, paintCanvas.width, paintCanvas.height);
+  let hasPixels = false;
+  for(let i = 3; i < imgData.data.length; i += 4){
+    if(imgData.data[i] > 0){ hasPixels = true; break; }
+  }
+
+  if(hasPixels){
+    damageDrawings[activeDrawingKey] = paintCanvas.toDataURL("image/png");
+    saveDamageToStorage();
+    showToast("Dibujo guardado.");
+  }else{
+    delete damageDrawings[activeDrawingKey];
+    saveDamageToStorage();
+    showToast("Dibujo vacío — no se guardó nada.");
+  }
+
+  // Refresca el botón para mostrar el check
+  const btn = document.querySelector(`.draw-damage-btn[data-damage-key="${activeDrawingKey}"]`);
+  if(btn) refreshDamageBtn(btn, activeDrawingKey);
+
+  closeDrawingModal();
+}
+
+function saveDamageToStorage(){
+  try{
+    localStorage.setItem(DAMAGE_STORAGE_KEY, JSON.stringify(damageDrawings));
+  }catch(e){
+    console.warn("No se pudo guardar dibujos:", e);
+  }
+}
+
+function restoreDamageFromStorage(){
+  try{
+    const raw = localStorage.getItem(DAMAGE_STORAGE_KEY);
+    if(!raw) return;
+    const parsed = JSON.parse(raw);
+    if(parsed && typeof parsed === "object"){
+      damageDrawings = parsed;
+      document.querySelectorAll(".draw-damage-btn").forEach(btn => {
+        refreshDamageBtn(btn, btn.dataset.damageKey);
+      });
+    }
+  }catch(e){
+    console.warn("No se pudieron restaurar dibujos:", e);
+  }
+}
+
+function clearDamageDrawings(){
+  damageDrawings = {};
+  try{ localStorage.removeItem(DAMAGE_STORAGE_KEY); }catch(e){}
+  document.querySelectorAll(".draw-damage-btn").forEach(btn => {
+    refreshDamageBtn(btn, btn.dataset.damageKey);
+  });
 }
 
 /* =============================
@@ -1704,7 +2489,11 @@ function showStep(idx){
   });
 
   document.querySelectorAll(".step-dot").forEach((btn,i)=>{
-    btn.classList.toggle("active", i === idx);
+    const isActive = i === idx;
+    btn.classList.toggle("active", isActive);
+    if(isActive && btn.scrollIntoView){
+      btn.scrollIntoView({behavior:"smooth", inline:"center", block:"nearest"});
+    }
   });
 
   document.getElementById("btnBack").disabled = idx === 0;
@@ -1831,10 +2620,37 @@ function bindButtons(){
   };
 }
 
+function applyMobileInputHints(input, key){
+  // Sin pisar attributes que ya haya puesto el HTML (tipo email, date)
+  if(input.type === "date" || input.type === "email") return;
+  const k = key.toLowerCase();
+  if(/(telefono|celular)/.test(k)){
+    input.setAttribute("inputmode","tel");
+    input.setAttribute("autocomplete","tel");
+  }else if(/(cedula|numdoc|nit)/.test(k)){
+    input.setAttribute("inputmode","numeric");
+    input.setAttribute("autocomplete","off");
+  }else if(/(edad|placa)/.test(k)){
+    // Placa es alfanumérica (ABC123); edad numérica
+    if(/edad/.test(k)) input.setAttribute("inputmode","numeric");
+    input.setAttribute("autocomplete","off");
+  }else if(/(correo|email)/.test(k)){
+    input.setAttribute("inputmode","email");
+    input.setAttribute("autocomplete","email");
+  }else if(/(nombre|tomador|asegurado|declarante|conductor|propietario)/.test(k)){
+    input.setAttribute("autocomplete","name");
+  }else if(/(direccion)/.test(k)){
+    input.setAttribute("autocomplete","street-address");
+  }else if(/(ciudad|municipio)/.test(k)){
+    input.setAttribute("autocomplete","address-level2");
+  }
+}
+
 function bindInputs(){
   document.querySelectorAll(".pdf-field").forEach(input=>{
     const key = input.dataset.key;
     fields[key] = input.value || "";
+    applyMobileInputHints(input, key);
 
     input.addEventListener("input",()=>{
       fields[key] = input.value || "";
@@ -2213,7 +3029,8 @@ async function savePdf(){
       const payload = PDF_METADATA_PREFIX + JSON.stringify(fields);
       out.setSubject(payload);
       out.setTitle("Declaración de siniestro - Soluasistencia");
-      out.setProducer("Soluasistencia Formulario Móvil");
+      out.setProducer("Soluasistencia Formulario Móvil v" + APP_VERSION);
+      out.setCreator("Soluasistencia v" + APP_VERSION);
     }catch(e){
       console.warn("No se pudo embeber metadata:", e);
     }
@@ -2248,17 +3065,57 @@ async function savePdf(){
     });
 
     if(signatureHasData){
-      const pngDataUrl = signatureCanvas.toDataURL("image/png");
+      // Recortamos el canvas al bounding box del trazo (elimina el espacio en blanco)
+      const trimmed = trimCanvasToContent(signatureCanvas) || signatureCanvas;
+      const pngDataUrl = trimmed.toDataURL("image/png");
       const pngBytes = dataUrlToUint8Array(pngDataUrl);
       const sigImg = await out.embedPng(pngBytes);
       const page = pages[0];
       const scaleX = page.getWidth() / PDF_PAGE_W;
       const scaleY = page.getHeight() / PDF_PAGE_H;
+
+      // Preservamos la proporción del trazo recortado, centrado dentro del SIGNATURE_BOX
+      const boxW = SIGNATURE_BOX.width * scaleX;
+      const boxH = SIGNATURE_BOX.height * scaleY;
+      const imgAspect = trimmed.width / trimmed.height;
+      const boxAspect = boxW / boxH;
+
+      let drawW, drawH;
+      if(imgAspect > boxAspect){
+        drawW = boxW;
+        drawH = boxW / imgAspect;
+      }else{
+        drawH = boxH;
+        drawW = boxH * imgAspect;
+      }
+
+      // Centrado horizontalmente, alineado abajo (la firma "se apoya" en la línea)
+      const offsetX = (boxW - drawW) / 2;
+      const baseY = page.getHeight() - ((SIGNATURE_BOX.y + SIGNATURE_BOX.height) * scaleY);
       page.drawImage(sigImg,{
-        x: SIGNATURE_BOX.x * scaleX,
-        y: page.getHeight() - ((SIGNATURE_BOX.y + SIGNATURE_BOX.height) * scaleY),
-        width: SIGNATURE_BOX.width * scaleX,
-        height: SIGNATURE_BOX.height * scaleY
+        x: (SIGNATURE_BOX.x * scaleX) + offsetX,
+        y: baseY,
+        width: drawW,
+        height: drawH
+      });
+    }
+
+    // Embebe los dibujos de daños sobre cada silueta de carro
+    for(const key in damageDrawings){
+      const dataUrl = damageDrawings[key];
+      const region = CAR_REGIONS[key];
+      if(!dataUrl || !region) continue;
+      const pngBytes = dataUrlToUint8Array(dataUrl);
+      const dmgImg = await out.embedPng(pngBytes);
+      const page = pages[region.page - 1];
+      if(!page) continue;
+      const scaleX = page.getWidth() / PDF_PAGE_W;
+      const scaleY = page.getHeight() / PDF_PAGE_H;
+      page.drawImage(dmgImg, {
+        x: region.x * scaleX,
+        y: page.getHeight() - ((region.y + region.height) * scaleY),
+        width: region.width * scaleX,
+        height: region.height * scaleY
       });
     }
 
@@ -2439,6 +3296,45 @@ function formatDateForFile(v){
 
 function cleanFilePart(v){
   return String(v).trim().replace(/[^\w\-]+/g,"_").toUpperCase();
+}
+
+function trimCanvasToContent(canvas){
+  const ctx = canvas.getContext("2d");
+  const w = canvas.width;
+  const h = canvas.height;
+  if(!w || !h) return null;
+
+  const imgData = ctx.getImageData(0, 0, w, h).data;
+  let minX = w, minY = h, maxX = -1, maxY = -1;
+
+  for(let y = 0; y < h; y++){
+    for(let x = 0; x < w; x++){
+      const alpha = imgData[(y * w + x) * 4 + 3];
+      if(alpha > 0){
+        if(x < minX) minX = x;
+        if(x > maxX) maxX = x;
+        if(y < minY) minY = y;
+        if(y > maxY) maxY = y;
+      }
+    }
+  }
+
+  if(maxX < 0) return null; // canvas vacío
+
+  // Pequeño padding alrededor del trazo
+  const pad = 4;
+  minX = Math.max(0, minX - pad);
+  minY = Math.max(0, minY - pad);
+  maxX = Math.min(w - 1, maxX + pad);
+  maxY = Math.min(h - 1, maxY + pad);
+
+  const cropW = maxX - minX + 1;
+  const cropH = maxY - minY + 1;
+  const out = document.createElement("canvas");
+  out.width = cropW;
+  out.height = cropH;
+  out.getContext("2d").drawImage(canvas, minX, minY, cropW, cropH, 0, 0, cropW, cropH);
+  return out;
 }
 
 function dataUrlToUint8Array(dataUrl){
