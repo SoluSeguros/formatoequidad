@@ -1393,8 +1393,8 @@ label.required::after{
           <div class="col-12"><h6 class="fw-bold mt-1">Lesionado 1</h6></div>
           <div class="col-12"><label>Nombre</label><input class="form-control pdf-field" data-key="l1Nombre"></div>
           <div class="col-6"><label>C.C.</label><input class="form-control pdf-field" data-key="l1Cedula"></div>
+          <div class="col-6"><label>Dirección</label><input class="form-control pdf-field" data-key="l1Direccion"></div>
           <div class="col-6"><label>Teléfono</label><input class="form-control pdf-field" data-key="l1Telefono"></div>
-          <div class="col-12"><label>Dirección</label><input class="form-control pdf-field" data-key="l1Direccion"></div>
           <div class="col-6"><label>Gravedad</label>
             <select class="form-select pdf-field" data-key="l1Gravedad">
               <option value="">Seleccione</option>
@@ -1403,13 +1403,14 @@ label.required::after{
               <option>GRAVE</option>
             </select>
           </div>
-          <div class="col-6"><label>Clínica u hospital</label><input class="form-control pdf-field" data-key="l1Hospital"></div>
+          <div class="col-12"><label>Lesiones sufridas (descripción)</label><input class="form-control pdf-field" data-key="l1Lesiones" maxlength="90" placeholder="Ej: fractura de tibia, trauma craneoencefálico..."></div>
+          <div class="col-12"><label>Clínica u hospital</label><input class="form-control pdf-field" data-key="l1Hospital"></div>
 
           <div class="col-12"><h6 class="fw-bold mt-3">Lesionado 2</h6></div>
           <div class="col-12"><label>Nombre</label><input class="form-control pdf-field" data-key="l2Nombre"></div>
           <div class="col-6"><label>C.C.</label><input class="form-control pdf-field" data-key="l2Cedula"></div>
+          <div class="col-6"><label>Dirección</label><input class="form-control pdf-field" data-key="l2Direccion"></div>
           <div class="col-6"><label>Teléfono</label><input class="form-control pdf-field" data-key="l2Telefono"></div>
-          <div class="col-12"><label>Dirección</label><input class="form-control pdf-field" data-key="l2Direccion"></div>
           <div class="col-6"><label>Gravedad</label>
             <select class="form-select pdf-field" data-key="l2Gravedad">
               <option value="">Seleccione</option>
@@ -1418,13 +1419,14 @@ label.required::after{
               <option>GRAVE</option>
             </select>
           </div>
-          <div class="col-6"><label>Clínica u hospital</label><input class="form-control pdf-field" data-key="l2Hospital"></div>
+          <div class="col-12"><label>Lesiones sufridas (descripción)</label><input class="form-control pdf-field" data-key="l2Lesiones" maxlength="90" placeholder="Ej: fractura de tibia, trauma craneoencefálico..."></div>
+          <div class="col-12"><label>Clínica u hospital</label><input class="form-control pdf-field" data-key="l2Hospital"></div>
 
           <div class="col-12"><h6 class="fw-bold mt-3">Lesionado 3</h6></div>
           <div class="col-12"><label>Nombre</label><input class="form-control pdf-field" data-key="l3Nombre"></div>
           <div class="col-6"><label>C.C.</label><input class="form-control pdf-field" data-key="l3Cedula"></div>
+          <div class="col-6"><label>Dirección</label><input class="form-control pdf-field" data-key="l3Direccion"></div>
           <div class="col-6"><label>Teléfono</label><input class="form-control pdf-field" data-key="l3Telefono"></div>
-          <div class="col-12"><label>Dirección</label><input class="form-control pdf-field" data-key="l3Direccion"></div>
           <div class="col-6"><label>Gravedad</label>
             <select class="form-select pdf-field" data-key="l3Gravedad">
               <option value="">Seleccione</option>
@@ -1433,7 +1435,8 @@ label.required::after{
               <option>GRAVE</option>
             </select>
           </div>
-          <div class="col-6"><label>Clínica u hospital</label><input class="form-control pdf-field" data-key="l3Hospital"></div>
+          <div class="col-12"><label>Lesiones sufridas (descripción)</label><input class="form-control pdf-field" data-key="l3Lesiones" maxlength="90" placeholder="Ej: fractura de tibia, trauma craneoencefálico..."></div>
+          <div class="col-12"><label>Clínica u hospital</label><input class="form-control pdf-field" data-key="l3Hospital"></div>
 
           <div class="col-12"><h6 class="fw-bold mt-3">Fallecido 1</h6></div>
           <div class="col-12"><label>Nombre</label><input class="form-control pdf-field" data-key="f1Nombre"></div>
@@ -1625,7 +1628,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc =
  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
 
 const TEMPLATE_URL = "plantilla.pdf";
-const APP_VERSION = "1.2.0";
+const APP_VERSION = "1.2.4";
 
 const STEPS = [
   "Accidente",
@@ -1789,6 +1792,7 @@ const FIELD_MAP = {
     MODERADA:{x:245,y:472},
     GRAVE:{x:308,y:472}
   }},
+  l1Lesiones:{page:2,x:17,y:481,size:5.0,maxWidth:300,minSize:4.0,lines:2,lineHeight:5},
   l1Hospital:{page:2,x:335,y:483,size:6.5,maxWidth:235,minSize:5.3},
 
   // Página 2 - Lesionado 2
@@ -1801,6 +1805,7 @@ const FIELD_MAP = {
     MODERADA:{x:245,y:516},
     GRAVE:{x:308,y:516}
   }},
+  l2Lesiones:{page:2,x:17,y:525,size:5.0,maxWidth:300,minSize:4.0,lines:2,lineHeight:5},
   l2Hospital:{page:2,x:335,y:527,size:6.5,maxWidth:235,minSize:5.3},
 
   // Página 2 - Lesionado 3
@@ -1813,6 +1818,7 @@ const FIELD_MAP = {
     MODERADA:{x:245,y:560},
     GRAVE:{x:308,y:560}
   }},
+  l3Lesiones:{page:2,x:17,y:569,size:5.0,maxWidth:300,minSize:4.0,lines:2,lineHeight:5},
   l3Hospital:{page:2,x:335,y:571,size:6.5,maxWidth:235,minSize:5.3},
 
   // Página 2 - Fallecido 1
@@ -2811,7 +2817,10 @@ function drawOverlay(){
 
     value = formatValueForField(item.key, value, cfg);
 
-    const fontSize = Math.max(7, cfg.size * zoom);
+    // Para campos con tipografía pequeña (ej: descripciones), usamos su tamaño real
+    // escalado por zoom — sin esto el preview se ve grande y desborda celdas estrechas.
+    const minFloor = cfg.size < 6 ? (cfg.minSize || 4) : 7;
+    const fontSize = Math.max(minFloor, cfg.size * zoom);
     overlayCtx.font = `${fontSize}px Arial`;
     overlayCtx.fillStyle = "black";
 
