@@ -28,7 +28,7 @@ const PRECACHE_EXTERNAL = [
   "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js",
   "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js",
   "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js",
-  "https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"
+  "https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"
 ];
 
 self.addEventListener("install", (event) => {
