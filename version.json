@@ -1,0 +1,9 @@
+{
+  "version": "1.4.0",
+  "fecha": "2026-10-22",
+  "cambios": [
+    "Se puede instalar en el celular y funciona sin conexión.",
+    "Avisa cuando hay una versión nueva y se actualiza con un toque, sin perder lo diligenciado.",
+    "Íconos para la pantalla de inicio de Android y iPhone."
+  ]
+}

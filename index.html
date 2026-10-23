@@ -8,11 +8,13 @@
 <!-- PWA -->
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#008f45">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Siniestros">
 <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
-<link rel="apple-touch-icon" href="icons/icon-192.svg">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
@@ -99,11 +101,15 @@ body{
   white-space:nowrap;
 }
 .header-action-btn:hover{background:rgba(255,255,255,.28)}
+.header-action-btn[hidden]{display:none}
 
+/* Toca la versión para buscar actualizaciones */
 .version-badge{
   display:inline-block;
+  font-family:inherit;
   font-size:10px;
   font-weight:700;
+  line-height:1.4;
   background:rgba(255,255,255,.22);
   border:1px solid rgba(255,255,255,.35);
   color:#fff;
@@ -112,12 +118,13 @@ body{
   margin-left:6px;
   vertical-align:middle;
   letter-spacing:.3px;
+  cursor:pointer;
 }
 
-/* Banner de nueva versión disponible (PWA) */
+/* Banner de nueva versión / instalar (PWA): arriba, para no chocar con los mensajes de abajo */
 .update-banner{
   position:fixed;
-  bottom:90px;
+  top:calc(10px + env(safe-area-inset-top, 0px));
   left:12px;
   right:12px;
   max-width:480px;
@@ -129,13 +136,16 @@ body{
   box-shadow:0 12px 30px rgba(0,0,0,.25);
   display:none;
   z-index:80;
+  flex-wrap:wrap;
   align-items:center;
   gap:10px;
   font-size:13px;
 }
 .update-banner.is-visible{display:flex}
 .update-banner strong{display:block;font-size:14px;margin-bottom:2px}
-.update-banner-text{flex:1;min-width:0}
+/* Texto arriba a todo lo ancho; los botones juntos debajo, alineados a la derecha */
+.update-banner-text{flex:1 1 100%;min-width:0}
+.update-banner-text + button{margin-left:auto}
 .update-banner button{
   background:var(--verde);color:#fff;border:none;
   font-weight:700;border-radius:10px;padding:8px 12px;
@@ -745,10 +755,6 @@ canvas{
     --bs-gutter-y:.65rem;
   }
 
-  /* Banner de actualización flotante: pegado más arriba sobre el bottom-bar */
-  .update-banner{
-    bottom:calc(96px + env(safe-area-inset-bottom, 0px));
-  }
   .toast-app{
     bottom:calc(90px + env(safe-area-inset-bottom, 0px));
   }
@@ -1064,12 +1070,15 @@ label.required::after{
       <div class="brand-text">
         <h1>
           Formulario móvil de siniestros
-          <span class="version-badge" id="versionBadge"></span>
+          <button type="button" class="version-badge" id="versionBadge" title="Toca para buscar actualizaciones"></button>
         </h1>
         <small>Soluasistencia · Declaración de responsabilidad civil servicio público</small>
       </div>
     </div>
     <div class="header-actions">
+      <button type="button" class="header-action-btn" id="btnInstallApp" hidden title="Instalar la app en este dispositivo">
+        <span>📲</span><span class="btn-label">Instalar app</span>
+      </button>
       <button type="button" class="header-action-btn" id="btnUploadHeader" title="Cargar PDF generado anteriormente para editarlo">
         <span>📄</span><span class="btn-label">Cargar PDF</span>
       </button>
@@ -1614,11 +1623,20 @@ label.required::after{
 <!-- Banner de nueva versión PWA disponible -->
 <div class="update-banner" id="updateBanner" role="alert">
   <div class="update-banner-text">
-    <strong>Nueva versión disponible</strong>
-    <span>Recarga para tener los últimos cambios.</span>
+    <strong id="updateTitle">Nueva versión disponible</strong>
+    <span id="updateText">Lo que llevas diligenciado se conserva.</span>
   </div>
   <button type="button" id="btnDismissUpdate" class="secondary">Después</button>
   <button type="button" id="btnApplyUpdate">Actualizar</button>
+</div>
+
+<!-- Cómo instalar en iPhone / iPad (Safari no ofrece un botón de instalación) -->
+<div class="update-banner" id="installBanner" role="dialog" aria-label="Instalar la app">
+  <div class="update-banner-text">
+    <strong>Instalar en iPhone o iPad</strong>
+    <span>En Safari toca Compartir (el cuadro con la flecha ↑) y luego «Agregar a pantalla de inicio».</span>
+  </div>
+  <button type="button" id="btnCloseInstall">Entendido</button>
 </div>
 
 <!-- Modal para dibujar los daños sobre el carro -->
@@ -1669,7 +1687,12 @@ pdfjsLib.GlobalWorkerOptions.workerSrc =
  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
 
 const TEMPLATE_URL = "plantilla.pdf";
-const APP_VERSION = "1.3.0";
+
+// La versión NO se escribe aquí: se lee de version.json al arrancar
+// (ver "VERSIÓN Y SERVICE WORKER").
+let APP_VERSION = "";
+let appVersionInfo = null;
+let latestVersionInfo = null;
 
 const STEPS = [
   "Accidente",
@@ -1967,10 +1990,7 @@ const PDF_METADATA_PREFIX = "SOLU_DATA::";
 ============================= */
 
 document.addEventListener("DOMContentLoaded", () => {
-  const versionBadge = document.getElementById("versionBadge");
-  if(versionBadge) versionBadge.textContent = "v" + APP_VERSION;
-
-  setupServiceWorker();
+  initVersionAndPwa();
 
   buildSteps();
   markRequiredLabels();
@@ -2010,70 +2030,248 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 /* =============================
-   SERVICE WORKER (PWA)
+   VERSIÓN Y SERVICE WORKER (PWA)
+   La versión publicada vive solo en version.json. Para publicar una versión nueva
+   se cambia ese archivo (ver README.md); el resto es automático:
+   - Al abrir la app, al volver a ella y cada 30 min se compara con version.json.
+   - Si hay otra versión, el navegador la descarga completa en segundo plano.
+   - Si el formulario está vacío se aplica sola; si tiene datos, se pregunta.
 ============================= */
 
-function setupServiceWorker(){
-  if(!("serviceWorker" in navigator)) return;
+const UPDATE_CHECK_INTERVAL = 30 * 60 * 1000;
+const LAST_VERSION_KEY = "soluseguros_last_version";
 
-  // Registramos el SW con la versión en query string. Cada cambio de APP_VERSION
-  // produce una URL distinta, lo que dispara la actualización automáticamente.
-  const swUrl = "sw.js?v=" + APP_VERSION;
+let swRegistration = null;
+let waitingWorker = null;
+let checkingUpdate = false;
+let deferredInstallPrompt = null;
 
-  navigator.serviceWorker.register(swUrl).then(reg => {
-    // Si ya hay un SW esperando al arrancar, mostramos el banner de inmediato.
-    if(reg.waiting && navigator.serviceWorker.controller){
-      showUpdateBanner(reg.waiting);
-    }
+async function initVersionAndPwa(){
+  setupInstallPrompt();
+  await loadRunningVersion();
+  announceUpdatedVersion();
+  setupServiceWorker();
+}
 
-    reg.addEventListener("updatefound", () => {
-      const newWorker = reg.installing;
-      if(!newWorker) return;
-      newWorker.addEventListener("statechange", () => {
-        if(newWorker.state === "installed" && navigator.serviceWorker.controller){
-          showUpdateBanner(newWorker);
-        }
-      });
-    });
-  }).catch(err => {
-    console.warn("[PWA] No se pudo registrar el service worker:", err);
-  });
-
-  // Cuando el SW que controla la página cambia, recargamos para usar la versión nueva.
-  let isReloading = false;
-  navigator.serviceWorker.addEventListener("controllerchange", () => {
-    if(isReloading) return;
-    isReloading = true;
-    window.location.reload();
-  });
-
-  // Botones del banner
-  const banner = document.getElementById("updateBanner");
-  const applyBtn = document.getElementById("btnApplyUpdate");
-  const dismissBtn = document.getElementById("btnDismissUpdate");
-  if(dismissBtn){
-    dismissBtn.addEventListener("click", () => {
-      if(banner) banner.classList.remove("is-visible");
-    });
+// version.json lo entrega el service worker desde el caché de la versión activa
+// (o la red en la primera visita): es la versión que de verdad se está ejecutando.
+async function loadRunningVersion(){
+  try{
+    const res = await fetch("version.json");
+    if(!res.ok) throw new Error("HTTP " + res.status);
+    appVersionInfo = await res.json();
+    APP_VERSION = String(appVersionInfo.version || "");
+  }catch(err){
+    console.warn("[PWA] No se pudo leer version.json:", err);
   }
-  if(applyBtn){
-    applyBtn.addEventListener("click", () => {
-      const waitingWorker = applyBtn._waitingWorker;
-      if(waitingWorker){
-        waitingWorker.postMessage({type: "SKIP_WAITING"});
-      }else{
-        window.location.reload();
-      }
-    });
+  const badge = document.getElementById("versionBadge");
+  if(badge) badge.textContent = APP_VERSION ? "v" + APP_VERSION : "v?";
+}
+
+// Tras una actualización, cuenta qué cambió
+function announceUpdatedVersion(){
+  if(!APP_VERSION) return;
+  let previous = null;
+  try{
+    previous = localStorage.getItem(LAST_VERSION_KEY);
+    localStorage.setItem(LAST_VERSION_KEY, APP_VERSION);
+  }catch(e){}
+  if(previous && previous !== APP_VERSION){
+    const first = ((appVersionInfo && appVersionInfo.cambios) || [])[0];
+    setTimeout(() => showToast(`Actualizado a la v${APP_VERSION}.` + (first ? " " + first : "")), 2800);
   }
 }
 
-function showUpdateBanner(waitingWorker){
-  const banner = document.getElementById("updateBanner");
-  const applyBtn = document.getElementById("btnApplyUpdate");
-  if(!banner) return;
-  if(applyBtn) applyBtn._waitingWorker = waitingWorker;
-  banner.classList.add("is-visible");
+function setupServiceWorker(){
+  if(!("serviceWorker" in navigator) || !APP_VERSION) return;
+
+  // En la primera visita el SW toma el control sin cambiar de versión: eso no recarga.
+  // Cualquier cambio posterior de controlador es una versión nueva: se recarga.
+  let controlled = !!navigator.serviceWorker.controller;
+  let reloading = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if(!controlled){
+      controlled = true;
+      return;
+    }
+    if(reloading) return;
+    reloading = true;
+    window.location.reload();
+  });
+
+  navigator.serviceWorker.register(swUrlFor(APP_VERSION), {updateViaCache: "none"})
+    .then(reg => {
+      swRegistration = reg;
+      if(reg.waiting && navigator.serviceWorker.controller) onUpdateReady(reg.waiting);
+      reg.addEventListener("updatefound", () => {
+        const worker = reg.installing;
+        if(!worker) return;
+        worker.addEventListener("statechange", () => {
+          if(worker.state === "installed" && navigator.serviceWorker.controller) onUpdateReady(worker);
+        });
+      });
+      checkForUpdate(false);
+    })
+    .catch(err => console.warn("[PWA] No se pudo registrar el service worker:", err));
+
+  // Una app instalada puede quedar abierta días: revisa al volver a ella y cada cierto tiempo
+  document.addEventListener("visibilitychange", () => {
+    if(document.visibilityState === "visible") checkForUpdate(false);
+  });
+  window.addEventListener("online", () => checkForUpdate(false));
+  window.addEventListener("offline", () => {
+    showToast("Sin conexión: puedes seguir diligenciando y generar el PDF.");
+  });
+  setInterval(() => checkForUpdate(false), UPDATE_CHECK_INTERVAL);
+
+  document.getElementById("versionBadge").addEventListener("click", () => checkForUpdate(true));
+  document.getElementById("btnApplyUpdate").addEventListener("click", applyUpdate);
+  document.getElementById("btnDismissUpdate").addEventListener("click", () => {
+    document.getElementById("updateBanner").classList.remove("is-visible");
+  });
+}
+
+function swUrlFor(version){
+  return "sw.js?v=" + encodeURIComponent(version);
+}
+
+function versionOfWorker(worker){
+  try{
+    return new URL(worker.scriptURL).searchParams.get("v") || "";
+  }catch(e){
+    return "";
+  }
+}
+
+async function fetchLatestVersion(){
+  const res = await fetch("version.json?check=" + Date.now(), {cache: "no-store"});
+  if(!res.ok) throw new Error("HTTP " + res.status);
+  latestVersionInfo = await res.json();
+  return latestVersionInfo;
+}
+
+async function checkForUpdate(manual){
+  if(!swRegistration || checkingUpdate) return;
+  if(waitingWorker){
+    if(manual) showUpdateBanner();
+    return;
+  }
+
+  checkingUpdate = true;
+  try{
+    const latest = await fetchLatestVersion();
+    // Distinta (no "mayor"): así también funciona volver a una versión anterior
+    if(latest.version && latest.version !== APP_VERSION){
+      if(manual) showToast(`Descargando la versión ${latest.version}...`);
+      // Registrar el SW de esa versión hace que el navegador la descargue completa;
+      // al terminar se dispara onUpdateReady.
+      await navigator.serviceWorker.register(swUrlFor(latest.version), {updateViaCache: "none"});
+    }else if(manual){
+      showToast(`Ya tienes la última versión (v${APP_VERSION}).`);
+    }
+  }catch(err){
+    console.warn("[PWA] No se pudo revisar la versión:", err);
+    if(manual){
+      showToast(navigator.onLine
+        ? "No se pudo buscar actualizaciones. Intenta de nuevo."
+        : "Sin conexión: no se pueden buscar actualizaciones ahora.");
+    }
+  }finally{
+    checkingUpdate = false;
+  }
+}
+
+function onUpdateReady(worker){
+  waitingWorker = worker;
+  // Sin nada diligenciado no hay nada que interrumpir: se actualiza de una vez
+  if(isFormEmpty()){
+    showToast(`Actualizando a la versión ${versionOfWorker(worker)}...`);
+    applyUpdate();
+  }else{
+    showUpdateBanner();
+  }
+}
+
+function isFormEmpty(){
+  return !Object.values(fields).some(v => String(v || "").trim())
+    && !hasSignature()
+    && !Object.keys(damageDrawings).length;
+}
+
+function showUpdateBanner(){
+  const version = waitingWorker ? versionOfWorker(waitingWorker) : "";
+  document.getElementById("updateTitle").textContent = version ? `Nueva versión ${version} lista` : "Nueva versión lista";
+  document.getElementById("updateText").textContent = "Lo que llevas diligenciado se conserva.";
+  document.getElementById("updateBanner").classList.add("is-visible");
+
+  // Agrega el primer cambio de la lista, si version.json corresponde a esa versión
+  const fill = info => {
+    const first = info && info.version === version && (info.cambios || [])[0];
+    if(first) document.getElementById("updateText").textContent = first + " Lo que llevas diligenciado se conserva.";
+  };
+  if(latestVersionInfo && latestVersionInfo.version === version) fill(latestVersionInfo);
+  else fetchLatestVersion().then(fill).catch(() => {});
+}
+
+function applyUpdate(){
+  if(!waitingWorker){
+    window.location.reload();
+    return;
+  }
+  // La página se recargará al activarse la versión nueva: se guarda ya lo pendiente
+  clearTimeout(saveTimer);
+  saveToStorage();
+  document.getElementById("updateBanner").classList.remove("is-visible");
+  waitingWorker.postMessage({type: "SKIP_WAITING"});
+}
+
+/* =============================
+   INSTALAR LA APP
+============================= */
+
+function isStandalone(){
+  return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+}
+
+function isIos(){
+  return /iphone|ipad|ipod/i.test(navigator.userAgent)
+    || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+}
+
+function setupInstallPrompt(){
+  const btn = document.getElementById("btnInstallApp");
+  const help = document.getElementById("installBanner");
+  if(!btn || isStandalone()) return;
+
+  // Android / Chrome / Edge: el navegador ofrece instalar y lo lanzamos desde el botón
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    btn.hidden = false;
+  });
+  window.addEventListener("appinstalled", () => {
+    deferredInstallPrompt = null;
+    btn.hidden = true;
+    help.classList.remove("is-visible");
+    showToast("App instalada. Ábrela desde la pantalla de inicio.");
+  });
+
+  // Safari en iPhone/iPad no ofrece instalar solo: el botón explica cómo hacerlo
+  if(isIos()) btn.hidden = false;
+
+  btn.addEventListener("click", async () => {
+    if(deferredInstallPrompt){
+      deferredInstallPrompt.prompt();
+      await deferredInstallPrompt.userChoice;
+      deferredInstallPrompt = null;
+      btn.hidden = true;
+    }else{
+      help.classList.add("is-visible");
+    }
+  });
+  document.getElementById("btnCloseInstall").addEventListener("click", () => {
+    help.classList.remove("is-visible");
+  });
 }
 
 /* =============================
